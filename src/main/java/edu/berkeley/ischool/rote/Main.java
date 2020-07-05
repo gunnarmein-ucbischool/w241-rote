@@ -24,8 +24,8 @@ import spark.servlet.SparkApplication;
 public class Main implements SparkApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static final String logFileName = "/home/site/wwwroot/webapps/rote_log.txt";
-    private static final String csvFileName = "/home/site/wwwroot/webapps/rote_log.csv";
+    private static final String logFileName = "/home/rote_log.txt";
+    private static final String csvFileName = "/home/rote_data.csv";
     private static final String mainPW = "powerlifter";
 
     @Override
@@ -35,7 +35,7 @@ public class Main implements SparkApplication {
         System.out.println("user.dir:  " + System.getProperty("user.dir"));
         System.out.println("user.home: " + System.getProperty("user.home"));
 
-        logToFile("---------------start of log for new instance");
+        logToFile("\n\n---------------start of log for new instance\n");
         logToCSV("\n");
 
         port(80);
@@ -44,7 +44,7 @@ public class Main implements SparkApplication {
         get("new", (req, res) -> getSessionID(req));
         get("headers", (req, res) -> getHeaders(req));
         get("getlogfile", (req, res) -> getLogFile(req, res));
-        get("csvfile", (req, res) -> getCSVFile(req, res));
+        get("getdata", (req, res) -> getCSVFile(req, res));
         logger.info("Rote: Fully initialized");
         System.out.println("Rote: Fully initialized");
     }
@@ -85,21 +85,23 @@ public class Main implements SparkApplication {
             if (!f.exists()) {
                 f.createNewFile();
             }
-            System.out.println("Logging to " + f.getAbsolutePath());
+            System.out.println("Logging to " + f.getAbsolutePath() + ": " + data);
 
-            FileWriter fileWritter = new FileWriter(f.getName(), true);
-            BufferedWriter bw = new BufferedWriter(fileWritter);
-            bw.write(data);
-            bw.close();
+            FileWriter fw = new FileWriter(f, true);
+            fw.write(data);
+            fw.flush();
+            fw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private static Object getLogFile(Request req, Response res) {
-        String pw = req.params("pw");
-        if (!pw.equalsIgnoreCase(mainPW)) {
-            throw halt(401, "unauthorized");
+        String pw = req.queryParams("pw");
+        if (pw == null || !pw.equalsIgnoreCase(mainPW)) {
+            System.out.println("Attempted pw: '" + pw + "'");
+            halt(401, "unauthorized");
+            return null;
         }
 
         File file = new File(logFileName);
@@ -122,7 +124,8 @@ public class Main implements SparkApplication {
 
         } catch (Exception e) {
             log(req, e.getMessage());
-            throw halt(405, "server error");
+            halt(405, "server error");
+            return null;
         }
 
         return null;
@@ -136,19 +139,20 @@ public class Main implements SparkApplication {
             }
             System.out.println("Logging to " + f.getAbsolutePath());
 
-            FileWriter fileWritter = new FileWriter(f.getName(), true);
-            BufferedWriter bw = new BufferedWriter(fileWritter);
-            bw.write(data);
-            bw.close();
+            FileWriter fw = new FileWriter(f, true);
+            fw.write(data);
+            fw.flush();
+            fw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private static Object getCSVFile(Request req, Response res) {
-        String pw = req.params("pw");
-        if (!pw.equalsIgnoreCase(mainPW)) {
-            throw halt(401, "unauthorized");
+        String pw = req.queryParams("pw");
+        if (pw == null || !pw.equalsIgnoreCase(mainPW)) {
+            halt(401, "unauthorized");
+            return null;
         }
 
         File file = new File(csvFileName);
@@ -171,7 +175,8 @@ public class Main implements SparkApplication {
 
         } catch (Exception e) {
             log(req, e.getMessage());
-            throw halt(405, "server error");
+            halt(405, "server error");
+            return null;
         }
 
         return null;
