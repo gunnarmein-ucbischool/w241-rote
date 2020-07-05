@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package rote;
+package edu.berkeley.ischool.rote;
 
 import spark.Session;
 
