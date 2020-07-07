@@ -135,6 +135,7 @@ public class Main implements SparkApplication {
     }
 
     private static String adminLogin(Request req, Response res) {
+        startSession(req);
         String pw = req.queryParamOrDefault("pw", "nope");
         if (pw.equalsIgnoreCase(mainPW)) {
             req.session().attribute("admin", "admin");
@@ -215,13 +216,7 @@ public class Main implements SparkApplication {
     }
 
     private static Object getLogFile(Request req, Response res) {
-        String logFileName = req.queryParams("logfilename");
-        String pw = req.queryParams("pw");
-        if (pw == null || !pw.equalsIgnoreCase(mainPW)) {
-            System.out.println("Attempted pw: '" + pw + "'");
-            halt(401, "unauthorized");
-            return null;
-        }
+        String logFileName = req.queryParamOrDefault("logfilename", "none");
 
         File file = new File(logFileName);
         res.raw().setContentType("application/octet-stream");
