@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Page Title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            h1{
+                background-color:white;
+                text-align:center;
+                color:red; 
+            }
+        </style>
+    </head>
+    <body style="background-color:azure; color:darkslategray ">
+        <h1>Personal Information</h1>
+        <form action="/submitinfo" method="post">
+            Age:&nbsp;&nbsp;
+            <Input type="text" Name="Age" Size=15 Maxlength=15><br>
+            <br>
+            Gender:<br>
+            <Input type="radio" Name="Gender">&nbsp;M<br>
+            <Input type="radio" Name="Gender">&nbsp;F<br>
+            <Input type="radio" Name="Gender">&nbsp;other<br>
+            <Input type="radio" Name="Gender">&nbsp;prefer not to say<br>
+            <br>
+            How much do you know about xxx?<br>
+            <Input type="radio" Name="Knowledge">&nbsp;None<br>
+            <Input type="radio" Name="Knowledge">&nbsp;Little<br>
+            <Input type="radio" Name="Knowledge">&nbsp;Some<br>
+            <Input type="radio" Name="Knowledge">&nbsp;Substantial<br>
+            <Input type="radio" Name="Knowledge">&nbsp;Expert<br>
+            <br>
+            How much do you read?<br>
+            <Input type="radio" Name="Reading">&nbsp;Not at all<br>
+            <Input type="radio" Name="Reading">&nbsp;Little<br>
+            <Input type="radio" Name="Reading">&nbsp;Some<br>
+            <Input type="radio" Name="Reading">&nbsp;Substantial<br>
+            <Input type="radio" Name="Reading">&nbsp;All the time<br>
+            <br>
+          
+            <p style="text-align: center">
+                <Input type="Submit" value="Submit and continue">&nbsp;&nbsp;
+                <Input type="Reset" value="Reset">
+            </p>
+        </form>    
+    </body>
+</html>

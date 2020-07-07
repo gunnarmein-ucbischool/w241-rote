@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Rote memorization survey</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>
+            Hello Rote user!<br>
+            <br>
+            You have been assigned to treatment, but you won't know that. <br>
+            <br>
+            The Fusor project is a 5-year effort to build an electrostatic inertial confinement fusion reactor at Eastside Preparatory School.
+            Students under expert supervision have built a machine that uses high vacuum and high voltage to accelerate deuterium ions
+            toward each other. When the ions collide with enough speed, they fuse into Helium-3 or Tritium, about 50% each. 
+            In the tritium reaction, a neutron is released, allowing us to verify that nuclear fusion actually took place. With such
+            experiments comes dangerous radiation in the form of x-rays and neutrons. Lead-shielding is deployed to deal with the x-rays,
+            paraffin with its high hydrogen content serves as the neutron moderator. <br>
+            <br>
+            Over summer, the Fusor team has conducted extensive modeling efforts to gauge the effectiveness of imperfect neutron shielding.
+            Simulations employ isotropic scattering (in which the cosine of the scattering angle is distributed uniformly). A major
+            variable is missing from our simulations - it is impossible for us to forecast the neutron flux as there are simply too many
+            variables involved. We can only predict the relative effectiveness of the shielding. <br>
+            <br>
+            From the above text, we would like you to remember the reasons we chose paraffin, the characteristics of isotropic scattering,
+            and what we know about the level of neutron flux we will be dealing with. Read the text again with this in mind, but don't take
+            notes, please. <br>
+            <br>
+            <form action="/checkanswers" method="post">
+                Why did we choose paraffin, in your own words (no copy/paste):<br>
+                <textarea  Name="N1" rows="5" cols="80" ></textarea>><br>
+                <br>
+                What do you know about isotropic scattering, in your own words (no copy/paste):<br>
+                <textarea  Name="N2" rows="5" cols="80" ></textarea>><br>
+                <br>
+                What does the Fusor team know about the neutron flux, in your own words (no copy/paste):<br>
+                <textarea  Name="N3"  rows="5" cols="80"></textarea>><br>
+                <br>
+                Thank you for answering these questions. Before you click submit, please read everything you wrote out loud, three times. <br>
+                <br>
+                <p style="text-align: center">
+                    <Input type="Submit" value="Done reading out loud, continue">
+                </p>
+            </form>
+        </div>
+    </body>
+</html>
