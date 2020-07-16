@@ -25,7 +25,7 @@ public class RoteSession {
     private final Session session;
     private final long start;
     private final String startDateTime;
-    private boolean treatment;
+    private final boolean treatment;
     List<Content.Item> content;
 
     public RoteSession(Session s) {
@@ -52,7 +52,7 @@ public class RoteSession {
         return id + "," + start + "," + treatment;
     }
 
-    boolean assignTreatControl() {
+    final boolean assignTreatControl() {
         // if in initial period, assign every session individually
         if (System.currentTimeMillis() < (RoteSession.systemStart + INITIAL_PERIOD)) {
             return ThreadLocalRandom.current().nextDouble() < 0.5;

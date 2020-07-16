@@ -23,43 +23,43 @@ import spark.servlet.SparkApplication;
 public class Main implements SparkApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static final String logFileName = "/home/rote_log.txt";
-    private static final String covFileName = "/home/rote_cov.csv";
-    private static final String testFileName = "/home/rote_test.csv";
+    private static final String logFileName = System.getProperty("user.home") + "/rote_log.txt";
+    private static final String covFileName = System.getProperty("user.home") + "/rote_cov.csv";
+    private static final String testFileName = System.getProperty("user.home") + "/rote_test.csv";
+//    private static final String logFileName = "/home/rote_log.txt";
+//    private static final String covFileName = "/home/rote_cov.csv";
+//    private static final String testFileName = "/home/rote_test.csv";
     private static final String mainPW = "powerlifter";
 
     @Override
     public void init() {
-        init(true);
-    }
-
-    static void main(String[] args) {
-        Main m = new Main();
-        m.init(false);
-        while (true) {
-            try {
-                Thread.currentThread().sleep(1000);
-            } catch (Exception e) {
-                break;
-            }
-        }
-    }
-
-    public void init(boolean onAzure) {
         logger.info("Rote: Initializing");
         System.out.println("Rote: Initializing");
         System.out.println("user.dir:  " + System.getProperty("user.dir"));
         System.out.println("user.home: " + System.getProperty("user.home"));
 
+        logToFile(logFileName, "Rote: Initializing\n");
+        logToFile(logFileName, "user.dir:  " + System.getProperty("user.dir") + "\n");
+        logToFile(logFileName, "user.home: " + System.getProperty("user.home") + "\n");
+
         logToFile(logFileName, "\n\n---------------start of log for new instance\n");
         logToFile(covFileName, "\n");
         logToFile(testFileName, "\n");
 
-        port(80);
-        if (onAzure) {
-            staticFiles.externalLocation("/home/site/wwwroot/webapps/ROOT/public/");
+        if (System.getProperty("user.home").startsWith("/Users/")) {
+            // on Mac
+            port(8080);
+            
+            //staticFiles.location("public");
+            String statfiles = System.getProperty("user.dir").substring(0,System.getProperty("user.dir").length()-3)+"webapps/Rote-1.0/public";
+            logToFile(logFileName, "Static files: "+statfiles);
+            System.out.println("Static files: "+statfiles);
+            staticFiles.externalLocation(statfiles);
+
         } else {
-            staticFiles.location("/public");
+            // on Azure
+            port(80);
+            staticFiles.externalLocation("/home/site/wwwroot/webapps/ROOT/public/");
         }
         //get("new", (req, res) -> getSessionID(req));
         get("headers", (req, res) -> getHeaders(req));
