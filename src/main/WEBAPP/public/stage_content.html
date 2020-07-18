@@ -70,11 +70,11 @@
                 <Button onclick="location.assign('continue_content')">Continue</Button>
             </p>
         </div>
+        <div style="position:absolute; top: 50px; left: 50px" id ='clock'><h1>2:00</h1></div>
         <script src="JS/common.js">
         </script>
         <script>
             content = getContent();
-            var t = "";
             for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
                 document.getElementById("t" + (i + 1)).innerHTML = content[i].title;
                 document.getElementById("c" + (i + 1)).value = content[i].passage;
@@ -82,6 +82,18 @@
                     document.getElementById("q" + (i + 1) + (j + 1)).innerHTML = content[i].questions[j];
                 }
             }
+            var t = 120;
+            function updateClock() {
+                t -= 1;
+                if (t >= 0) {
+                    var s = "" + Math.floor(t / 60) + ":" + Math.floor(t % 60);
+                    document.getElementById("clock").innerHTML = "<h1>"+s+"</h1>";
+                } else {
+                    location.assign('continue_content');
+                }
+            }
+
+            setInterval(updateClock, 1000);
         </script>
     </body>
 </html>
