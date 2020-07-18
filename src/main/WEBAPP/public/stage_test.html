@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Rote memorization survey: Test</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>
+            <form action="post_test" method="post">
+                <p id="content"></p>
+            
+                <p style="text-align: center">
+                    <Input type="Submit" value="Submit and continue">&nbsp;&nbsp;
+                    <Input type="Reset" value="Reset">
+                </p>
+            </form>    
+
+        </div>
+        <script src="JS/common.js">
+        </script>
+        <script>
+            var content = getContent();
+            var t = "";
+            for (var i = 0; i < NUM_ITEMS; i++) {
+                t += "<h2>"+content[i].title + ":</h2>";
+                t += content[i].question +"<br>";
+                for (var j = 0; j < NUM_ANSWERS; j++) {
+                    t += "<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;" + content[i].answers[j] + "<br>";
+                }
+                t += "<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;I don\'t remember<br>";
+            }
+            document.getElementById("content").innerHTML = t;
+        </script>
+    </body>
+</html>

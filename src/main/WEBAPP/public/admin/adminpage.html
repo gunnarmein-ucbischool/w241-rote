@@ -7,10 +7,30 @@
     </head>
     <body>
         <div>
-            <a href="/getlogfile?logfilename=/home/rote_cov.csv">Download covariates</a><br>
-            <a href="/getlogfile?logfilename=/home/rote_test.csv">Download test results</a><br>
+            <a href="getlogfile?logfilename=rote_cov.csv">Download covariates csv</a><br>
+            <a href="getlogfile?logfilename=rote_test.csv">Download test results csv</a><br>
             <br>
-            <a href="/getlogfile?logfilename=/home/rote_log.txt">Download log</a><br>
+            <a href="getlogfile?logfilename=rote_log.txt">Download log</a><br>
+            <br>
+            <button onclick="forceAssignment(0)">Force control assignment</button>
+            <button onclick="forceAssignment(1)">Force treatment assignment</button>
+            <button onclick="forceAssignment(-1)">Reset to random cluster assignment</button><br>
+            <br>
+            <a href="start">Back to start</a><br>
+            
         </div>
+        <script>
+            function forceAssignment(group) {
+                let xhr = new XMLHttpRequest();
+                xhr.open("PUT", "forceassignment?assignment=" + group, false);
+                xhr.send();
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    console.log(xhr.response);
+                } else {
+                    console.log("force assignment failed: "+xhr.statusText);
+                }
+            }
+        </script>
     </body>
+
 </html>

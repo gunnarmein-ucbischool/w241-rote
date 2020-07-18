@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Rote memorization survey</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>
+            Please look at the content again, and write down each item to be memorized in the boxes, in your own (brief words):<br>
+            <p id="content"></p>
+            <form action="post_write" method="post">
+                <h2 id="t1"></h2>
+                <textarea id ="c1" rows="4" cols="200"></textarea>
+                <p>Question: <span id="q1"></span></p>
+                Your answer: <br>
+                <textarea Name="N1" rows="2" cols="80" ></textarea>><br>
+                
+                <h2 id="t2"></h2>
+                <textarea id ="c2" rows="4" cols="200"></textarea>
+                <p>Question: <span id="q2"></span></p>
+                Your answer: <br>
+                <textarea Name="N1" rows="5" cols="80" ></textarea>><br>
+
+                <h2 id="t3"></h2>
+                <textarea id ="c3" rows="4" cols="200"></textarea>
+                <p>Question: <span id="q3"></span></p>
+                Your answer: <br>
+                <textarea Name="N1" rows="5" cols="80" ></textarea>><br>
+
+                <h2 id="t4"></h2>
+                <textarea id ="c4" rows="4" cols="200"></textarea>
+                <p>Question: <span id="q4"></span></p>
+                Your answer: <br>
+                <textarea Name="N1" rows="5" cols="80" ></textarea>><br>
+
+                <br>    Thank you for following these instructions!<br>
+                <br>
+                <p style="text-align: center">
+                    <Input type="Submit" value="Continue">
+                </p>
+            </form>
+        </div>
+        <script src="JS/common.js">
+        </script>
+        <script>
+            content = getContent();
+            for (var i = 0; i < NUM_ITEMS; i++) {
+                document.getElementById("t" + (i + 1)).innerHTML = content[i].title;
+                document.getElementById("c" + (i + 1)).value = content[i].passage;
+                document.getElementById("q" + (i + 1)).innerHTML = content[i].question;
+            }
+
+            t += "<textarea Name=\"N" + i + "\" rows=\"5\" cols=\"80\" ></textarea>><br>";
+
+        </script>
+    </body>
+</html>
