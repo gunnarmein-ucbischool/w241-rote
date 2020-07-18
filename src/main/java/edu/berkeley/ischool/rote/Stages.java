@@ -87,7 +87,7 @@ public class Stages {
     public static String speak(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
         rs.stage = Main.Stage.CONTENT2_SPEAK;
-        res.redirect("stage_speak.html");
+        res.redirect("before_speak.html");
         return "";
     }
 

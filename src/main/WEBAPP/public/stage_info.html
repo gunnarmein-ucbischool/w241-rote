@@ -8,36 +8,44 @@
               integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
               crossorigin="anonymous">
     </head>
-    <body  style="margin-left:20px;margin-top: 20px">
-        <h1>Personal Information</h1>
-        <form action="post_info" method="post">
-            Age:&nbsp;&nbsp;
-            <Input type="text" Name="Age" Size=15 Maxlength=15><br>
+    <body  style="margin-top: 20px">
+        <h2 style="text-align: center">Personal Information</h2><br><br>
+        <h4 style="text-align: center">Please tell us a tiny bit about yourself. This is all the information we will store, nothing can be associated with you.</h4>
+        <br>
+        <br>
+        <form action="post_info" method="post" >
+            <p style="margin-left:35%">
+                Age:&nbsp;&nbsp;
+                <Input type="text" Name="Age" Size=15 Maxlength=15><br>
+                <br>
+                Gender:<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="M" Name="Gender">&nbsp;Male<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="F" Name="Gender">&nbsp;Female<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="other" Name="Gender">&nbsp;Other<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="NA" Name="Gender">&nbsp;Prefer not to say<br>
+                <br>
+                How much practice with memorization do you have from drama, music, etc.?<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k1" Name="Practice">&nbsp;None<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k2" Name="Practice">&nbsp;Little<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k3" Name="Practice">&nbsp;Some<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k4" Name="Practice">&nbsp;A substantial amount<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k5" Name="Practice">&nbsp;Expert<br>
+                <br>
+                How much do you read?<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="r1" Name="Reading">&nbsp;Not at all<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="r2" Name="Reading">&nbsp;Little<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="r3" Name="Reading">&nbsp;Some<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="r4" Name="Reading">&nbsp;A substantial amount<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="r5" Name="Reading">&nbsp;All the time<br>
+            </p>
             <br>
-            Gender:<br>
-            <Input type="radio" value="M" Name="Gender">&nbsp;Male<br>
-            <Input type="radio" value="F" Name="Gender">&nbsp;Female<br>
-            <Input type="radio" value="other" Name="Gender">&nbsp;other<br>
-            <Input type="radio" value="NA" Name="Gender">&nbsp;prefer not to say<br>
             <br>
-            How much practice with memorization do you have from drama, music, etc.?<br>
-            <Input type="radio" value="k1" Name="Practice">&nbsp;None<br>
-            <Input type="radio" value="k2" Name="Practice">&nbsp;Little<br>
-            <Input type="radio" value="k3" Name="Practice">&nbsp;Some<br>
-            <Input type="radio" value="k4" Name="Practice">&nbsp;Substantial<br>
-            <Input type="radio" value="k5" Name="Practice">&nbsp;Expert<br>
             <br>
-            How much do you read?<br>
-            <Input type="radio" value="r1" Name="Reading">&nbsp;Not at all<br>
-            <Input type="radio" value="r2" Name="Reading">&nbsp;Little<br>
-            <Input type="radio" value="r3" Name="Reading">&nbsp;Some<br>
-            <Input type="radio" value="r4" Name="Reading">&nbsp;Substantial<br>
-            <Input type="radio" value="r5" Name="Reading">&nbsp;All the time<br>
-            <br>
-
             <p style="text-align: center">
                 <Input type="Submit" value="Submit and continue">&nbsp;&nbsp;
-                <Input type="Reset" value="Reset">
             </p>
         </form>    
     </body>

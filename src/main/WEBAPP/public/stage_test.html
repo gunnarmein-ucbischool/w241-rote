@@ -14,13 +14,27 @@ and open the template in the editor.
               crossorigin="anonymous">   </head>
     <body>
         <div style="margin-left:20px;margin-top: 20px">
-            <H1>Time to put your memory to the test!</h1>
+            <H2 style="text-align: center">Time to put your memory to the test!</h2>
             <form action="post_test" method="post">
                 <p id="content"></p>
-
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
                 <p style="text-align: center">
                     <Input type="Submit" value="Submit and continue">&nbsp;&nbsp;
-                    <Input type="Reset" value="Reset">
                 </p>
             </form>    
 
@@ -31,14 +45,16 @@ and open the template in the editor.
             var content = getContent();
             var t = "";
             for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
+                t += "<div style=\"width:49%;float:left\">";
                 t += "<h3>" + content[i].title + ":</h3>";
                 for (var j = 0; j < NUM_QUESTIONS; j++) {
-                    t += "<p>" + content[i].questions[j].question + "</p>";
+                    t += "<p><b>" + content[i].questions[j].question + "</b><br>";
                     for (var k = 0; k < NUM_ANSWERS; k++) {
-                        t += "<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;" + content[i].questions[j].answers[k] + "<br>";
+                        t += "&nbsp;&nbsp;&nbsp;&nbsp;<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;" + content[i].questions[j].answers[k] + "<br>";
                     }
-                    t += "<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;I don\'t remember<br>";
+                    t += "&nbsp;&nbsp;&nbsp;&nbsp;<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;I don\'t remember<br></p>";
                 }
+                t += "</div>";
             }
             document.getElementById("content").innerHTML = t;
         </script>
