@@ -4,55 +4,99 @@
         <title>Rote memorization survey</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+              integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+              crossorigin="anonymous">    </head>
     <body>
-        <div>
-            Please look at the content again, and write down each item to be memorized in the boxes, in your own (brief words):<br>
-            <p id="content"></p>
-            <form action="post_write" method="post">
+        <form action="post_write" method="post">
+            <div style="margin-left:20px;margin-top: 20px">
+                <H1>Technique - Write it down!</h1>
+                <p>Please look at the content again, and write down each item to be memorized in the boxes, in your own (brief words):  </p>
+                <br>
                 <h2 id="t1"></h2>
-                <textarea id ="c1" rows="4" cols="200"></textarea>
-                <p>Question: <span id="q1"></span></p>
-                Your answer: <br>
-                <textarea Name="N1" rows="2" cols="80" ></textarea>><br>
-                
+                <div style="width:45%; float:left">
+                    <textarea id ="c1" rows="12" style="width:95%" wrap="soft"></textarea>
+                </div>
+                <div style="width:30%; float:left">
+                    <p>Question: <span id="q11"></span></p>
+                    <p>Question: <span id="q12"></span></p>
+                    <p>Question: <span id="q13"></span></p>
+                    <p>Question: <span id="q14"></span></p>
+                    <p>Question: <span id="q15"></span></p>
+                </div>
+                <div style="width:24%; float:left">
+                    <p>Answer: <input Name="N11" type=text style="width:70%"></p>
+                    <p>Answer: <input Name="N12" type=text style="width:70%"></p>
+                    <p>Answer: <input Name="N13" type=text style="width:70%"></p>
+                    <p>Answer: <input Name="N14" type=text style="width:70%"></p>
+                    <p>Answer: <input Name="N15" type=text style="width:70%"></p>
+                </div>
+                <br>
+                <br>
+                <br>  
+                <br>
+                <br>
+                <br>
+                <br>   
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>   
+                <br>
                 <h2 id="t2"></h2>
-                <textarea id ="c2" rows="4" cols="200"></textarea>
-                <p>Question: <span id="q2"></span></p>
-                Your answer: <br>
-                <textarea Name="N1" rows="5" cols="80" ></textarea>><br>
-
-                <h2 id="t3"></h2>
-                <textarea id ="c3" rows="4" cols="200"></textarea>
-                <p>Question: <span id="q3"></span></p>
-                Your answer: <br>
-                <textarea Name="N1" rows="5" cols="80" ></textarea>><br>
-
-                <h2 id="t4"></h2>
-                <textarea id ="c4" rows="4" cols="200"></textarea>
-                <p>Question: <span id="q4"></span></p>
-                Your answer: <br>
-                <textarea Name="N1" rows="5" cols="80" ></textarea>><br>
-
-                <br>    Thank you for following these instructions!<br>
+                <div style="width:45%; float:left">
+                    <textarea id ="c2" rows="12" style="width:95%" wrap="soft"></textarea>
+                </div>
+                <div style="width:30%; float:left">
+                    <p>Question: <span id="q21"></span></p>
+                    <p>Question: <span id="q22"></span></p>
+                    <p>Question: <span id="q23"></span></p>
+                    <p>Question: <span id="q24"></span></p>
+                    <p>Question: <span id="q25"></span></p>
+                </div>
+                <div style="width:24%; float:left">
+                    <p>Answer: <input Name="N21" type=text style="width:70%"></p>
+                    <p>Answer: <input Name="N22" type=text style="width:70%"></p>
+                    <p>Answer: <input Name="N23" type=text style="width:70%"></p>
+                    <p>Answer: <input Name="N24" type=text style="width:70%"></p>
+                    <p>Answer: <input Name="N25" type=text style="width:70%"></p>
+                </div>
+                <br>
+                <br>
+                <br>   
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>   
+                <br>
+                <br>
+                <br>   
+                <br>
+                <br>
+                <br>
+            </div>
+            <div style="wdith:100%; float:none">
+                <br>
                 <br>
                 <p style="text-align: center">
                     <Input type="Submit" value="Continue">
                 </p>
-            </form>
-        </div>
+            </div>
+        </form>
         <script src="JS/common.js">
         </script>
         <script>
             content = getContent();
-            for (var i = 0; i < NUM_ITEMS; i++) {
+            var t = "";
+            for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
                 document.getElementById("t" + (i + 1)).innerHTML = content[i].title;
                 document.getElementById("c" + (i + 1)).value = content[i].passage;
-                document.getElementById("q" + (i + 1)).innerHTML = content[i].question;
+                for (var j = 0; j < NUM_QUESTIONS; j++) {
+                    document.getElementById("q" + (i + 1) + (j + 1)).innerHTML = content[i].questions[j];
+                }
             }
-
-            t += "<textarea Name=\"N" + i + "\" rows=\"5\" cols=\"80\" ></textarea>><br>";
-
         </script>
     </body>
 </html>

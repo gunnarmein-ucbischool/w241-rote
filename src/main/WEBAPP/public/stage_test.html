@@ -9,12 +9,15 @@ and open the template in the editor.
         <title>Rote memorization survey: Test</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+              integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+              crossorigin="anonymous">   </head>
     <body>
-        <div>
+        <div style="margin-left:20px;margin-top: 20px">
+            <H1>Time to put your memory to the test!</h1>
             <form action="post_test" method="post">
                 <p id="content"></p>
-            
+
                 <p style="text-align: center">
                     <Input type="Submit" value="Submit and continue">&nbsp;&nbsp;
                     <Input type="Reset" value="Reset">
@@ -27,13 +30,15 @@ and open the template in the editor.
         <script>
             var content = getContent();
             var t = "";
-            for (var i = 0; i < NUM_ITEMS; i++) {
-                t += "<h2>"+content[i].title + ":</h2>";
-                t += content[i].question +"<br>";
-                for (var j = 0; j < NUM_ANSWERS; j++) {
-                    t += "<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;" + content[i].answers[j] + "<br>";
+            for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
+                t += "<h3>" + content[i].title + ":</h3>";
+                for (var j = 0; j < NUM_QUESTIONS; j++) {
+                    t += "<p>" + content[i].questions[j].question + "</p>";
+                    for (var k = 0; k < NUM_ANSWERS; k++) {
+                        t += "<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;" + content[i].questions[j].answers[k] + "<br>";
+                    }
+                    t += "<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;I don\'t remember<br>";
                 }
-                t += "<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;I don\'t remember<br>";
             }
             document.getElementById("content").innerHTML = t;
         </script>
