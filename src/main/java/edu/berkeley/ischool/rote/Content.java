@@ -23,23 +23,33 @@ import java.util.List;
 public class Content {
 
     public static final int NUM_COLUMNS = 11;
-    public static final int NUM_ITEMS = 8;
+    public static final int NUM_ITEMS = 4;
+    public static final int NUM_QUESTIONS = 5;
     public static final int NUM_ANSWERS = 5;
     private static final ArrayList<Item> list = new ArrayList<>();
 
     public static class Item {
-        //Passage,Question,A,B,C,D,E,Answer
 
         int id;
         String title;
         String passage;
-        String question;
-        String[] answers;
-        int correctAnswer;
+        public List<Content.Question> questions;
 
-        public Item(String title, String p, String q, String A, String B, String C, String D, String E, String answer) {
+        public Item(String title, String p, List<Content.Question> questions) {
             this.title = title;
             this.passage = p;
+            this.questions = questions;
+        }
+    }
+
+    public static class Question {
+        //Passage,Question,A,B,C,D,E,Answer
+
+        public String question;
+        public String[] answers;
+        int correctAnswer;
+
+        public Question(String q, String A, String B, String C, String D, String E, String answer) {
             this.question = q;
 
             this.answers = new String[NUM_ANSWERS];
@@ -52,7 +62,6 @@ public class Content {
 
             //this.correctAnswer = answer;
             this.correctAnswer = "ABCDE".indexOf(answer);
-          
 
             if (this.correctAnswer == -1) {
                 System.out.println("  ERROR: Correct answer not found");
@@ -63,7 +72,7 @@ public class Content {
     public static void readContent(String file) {
         String lastPassage = "";
         String lastTitle = "";
-        System.out.println("Reading content csv "+file);
+        System.out.println("Reading content csv " + file);
         try {
             InputStream is = new FileInputStream(file);
 
@@ -76,20 +85,32 @@ public class Content {
                     System.err.println("ERROR: Incorrect number of columns in CSV content1.csv: " + line.length);
                 }
                 // Passage,Question number,Question,A,B,C,D,E,IDK,Answer
-                String title = line[0].equals("") ? lastTitle : line[0];
-                String passage = line[0].equals("") ? lastPassage : line[1];
-                System.out.println("Content title: "+title);
-                String questionNumber = line[2];
-                String question = line[3];
-                String A = line[4];
-                String B = line[5];
-                String C = line[6];
-                String D = line[7];
-                String E = line[8];
-                String IDK = line[9];
-                String answer = line[10];
+                String title = line[0];
+                String passage = line[1];
+                System.out.println("Content title: " + title);
 
-                Item i = new Item(title, passage, question, A, B, C, D, E, answer);
+                ArrayList<Question> qs = new ArrayList<>();
+                for (int i = 0; i < NUM_QUESTIONS; i++) {
+                    String questionNumber = line[2];
+                    String question = line[3];
+                    String A = line[4];
+                    String B = line[5];
+                    String C = line[6];
+                    String D = line[7];
+                    String E = line[8];
+                    String IDK = line[9];
+                    String answer = line[10];
+
+                    Question q = new Question(question, A, B, C, D, E, answer);
+                    qs.add(q);
+                    
+                    if (i == NUM_ANSWERS-1) {
+                        break;
+                    }
+                    line = reader.readNext();
+                }
+
+                Item i = new Item(title, passage, qs);
                 i.id = Content.list.size();
                 Content.list.add(i);
                 lastPassage = passage;
@@ -100,7 +121,7 @@ public class Content {
             System.err.println("Content not found at " + file);
             return;
         }
-        System.out.println("Successfully read content csv "+file);
+        System.out.println("Successfully read content csv " + file);
     }
 
     public static List<Item> getRandomItems() {

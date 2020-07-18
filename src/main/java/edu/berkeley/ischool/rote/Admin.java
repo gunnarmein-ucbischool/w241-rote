@@ -9,6 +9,9 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import spark.Request;
@@ -49,9 +52,23 @@ public class Admin {
         return "forceAssignment set to:" + a;
     }
 
+    public static Object getCatalina(Request req, Response res) {
+        String name = System.getProperty("user.dir");
+        name = name.substring(0, name.length() - 3);
+        name += "logs/catalina.out";
+
+        try {
+            System.out.println("Trying to read: "+name);
+            return Files.readString(Paths.get(name));
+        } catch (Exception e) {
+            System.out.println("could not read catalina.out: "+name);
+        }
+        return "could not read catalina.out: "+name;
+    }
+
     public static Object getLogFile(Request req, Response res) {
-        String logFileName = Main.logs+"/"+req.queryParamOrDefault("logfilename", "none");
-        
+        String logFileName = Main.logs + "/" + req.queryParamOrDefault("logfilename", "none");
+
         File file = new File(logFileName);
         res.raw().setContentType("application/octet-stream");
         res.raw().setHeader("Content-Disposition", "attachment; filename=" + file.getName() + ".zip");

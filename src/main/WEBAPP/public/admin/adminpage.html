@@ -17,7 +17,10 @@
             <button onclick="forceAssignment(-1)">Reset to random cluster assignment</button><br>
             <br>
             <a href="start">Back to start</a><br>
-            
+
+            Tomcat standard output:
+
+            <textarea id="out" rows="10" cols="200"></textarea>
         </div>
         <script>
             function forceAssignment(group) {
@@ -27,9 +30,25 @@
                 if (xhr.status >= 200 && xhr.status < 300) {
                     console.log(xhr.response);
                 } else {
-                    console.log("force assignment failed: "+xhr.statusText);
+                    console.log("force assignment failed: " + xhr.statusText);
                 }
             }
+
+            function update() {
+                let xhr = new XMLHttpRequest();
+                xhr.open("get", "getcatalina", true);
+                xhr.send();
+                xhr.onload = function () {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        document.getElementById("out").value = xhr.response;
+                        //console.log(xhr.response);
+                    } else {
+                        console.log("getupdate: " + xhr.statusText);
+                    }
+                };
+            }
+            
+            update();
         </script>
     </body>
 

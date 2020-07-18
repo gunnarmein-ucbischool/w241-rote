@@ -5,6 +5,10 @@
  */
 package edu.berkeley.ischool.rote;
 
+import edu.berkeley.ischool.rote.Content.Question;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  *
  * @author gunnar
@@ -12,12 +16,23 @@ package edu.berkeley.ischool.rote;
 public class ClientTestItem {
 
     String title;
-    String question;
-    String[] answers;
+    List<TestQuestion> questions;
+
+    public static class TestQuestion {
+        //Passage,Question,A,B,C,D,E,Answer
+
+        public String question;
+        public String[] answers;
+
+        public TestQuestion(Content.Question q) {
+            this.question = q.question;
+            this.answers = q.answers.clone();
+        }
+    }
 
     public ClientTestItem(Content.Item ci) {
+        List<Question> qs = ci.questions;
         this.title = ci.title;
-        this.question = ci.question;
-        this.answers = ci.answers.clone();
+        this.questions = qs.stream().map(q->new TestQuestion(q)).collect(Collectors.toList());
     }
 }

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Rote memorization survey: Distraction</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>
+            Please enjoy this little distraction. You will be moved to the next phase in less than a minute.<br>
+            <iframe style="width:1800px; height:900px"  
+                    src="https://www.youtube.com/embed/nGeKSiCQkPw?controls=0&autoplay=1" 
+                    frameborder="0" 
+                    allowfullscreen
+                    allow="autoplay">
+            </iframe>
+<!--            <iframe style="width:1800px; height:900px" 
+                    src="https://www.youtube.com/embed/jofNR_WkoCE?&controls=0&autoplay=1" 
+                    frameborder="0" 
+                    allowfullscreen
+                    allow="autoplay">
+            </iframe>-->
+        </div>
+        <script>
+            //var seconds = (3*60+45); // for full video
+            // var seconds = 48; // good cut
+            var seconds = 5; // debug
+            setTimeout(function() {location.assign("stage_test");}, (seconds)*1000);
+        </script>
+    </body>
+</html>

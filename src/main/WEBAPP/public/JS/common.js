@@ -1,4 +1,5 @@
-var NUM_ITEMS = 4;
+var NUM_ITEMS_PER_PAGE = 2;
+var NUM_QUESTIONS = 5;
 var NUM_ANSWERS = 5;
 
 function getContent() {

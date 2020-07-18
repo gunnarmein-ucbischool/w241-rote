@@ -18,30 +18,20 @@ import com.google.gson.Gson;
 public class Main implements SparkApplication {
 
     public static enum Stage {
-        INVALID(0),
-        START(1),
-        INFO(2),
-        CONTENT1(3),
-        TEST1(4),
-        CONTENT2(5),
-        CONTENT2_READ(6),
-        CONTENT2_SPEAK(7),
-        CONTENT2_WRITE(8),
-        DISTRACTION(9),
-        TEST2(10),
-        RESULTS(11),
-        FINISHED(12);
-
-        private final int state;
-
-        Stage(int state) {
-            this.state = state;
-        }
-
-        public int getValue() {
-            return state;
-        }
-
+        INVALID,
+        START,
+        INFO,
+        CONTENT1,
+        DISTRACTION1,
+        TEST1,
+        CONTENT2,
+        CONTENT2_READ,
+        CONTENT2_SPEAK,
+        CONTENT2_WRITE,
+        DISTRACTION2,
+        TEST2,
+        RESULTS,
+        FINISHED;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -82,9 +72,7 @@ public class Main implements SparkApplication {
         testFileName = logs + "/rote_test.csv";
         staticFiles.externalLocation(files + "/public/");
         Content.readContent(files + "/content1.csv");
-        //TODO: Remove this next line
-        Content.readContent(files + "/content-fake.csv");
-
+        
         logToFile(logFileName, "\nRote: Initializing");
         logToFile(logFileName, "user.dir:  " + System.getProperty("user.dir"));
         logToFile(logFileName, "user.home: " + System.getProperty("user.home"));
@@ -103,6 +91,7 @@ public class Main implements SparkApplication {
         get("admin/getlogfile", (req, res) -> Admin.getLogFile(req, res));
         get("admin/headers", (req, res) -> Admin.getHeaders(req));
         put("admin/forceassignment", (req, res) -> Admin.forceAssignment(req));
+        get("admin/getcatalina", (req, res) -> Admin.getCatalina(req,res));
         get("admin/start", (req, res) -> {
             res.redirect("../index.html");
             return "ok";
@@ -115,14 +104,13 @@ public class Main implements SparkApplication {
         get("stage_content", (req, res) -> Stages.content(req, res));
         get("continue_content", (req, res) -> Stages.continueContent(req, res));
         get("get_content", (req, res) -> RoteSession.getContent(req), Main::render);
+        get("stage_distraction", (req, res) -> Stages.distraction(req, res));
         get("stage_test", (req, res) -> Stages.test(req, res));
         post("post_test", (req, res) -> Stages.postTest(req, res));
 
         get("stage_speak", (req, res) -> Stages.speak(req, res));
         get("stage_write", (req, res) -> Stages.write(req, res));
         post("post_write", (req, res) -> Stages.postWrite(req, res));
-
-        get("stage_distraction", (req, res) -> Stages.distraction(req, res));
 
         get("stage_finished", (req, res) -> Stages.finished(req, res));
 

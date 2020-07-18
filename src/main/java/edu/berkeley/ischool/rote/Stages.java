@@ -35,16 +35,16 @@ public class Stages {
         RoteSession rs = RoteSession.getSession(req);
         String age = req.queryParamOrDefault("Age", "NA");
         String gender = req.queryParamOrDefault("Gender", "NA");
-        String knowledge = req.queryParamOrDefault("Knowledge", "NA");
+        String practice = req.queryParamOrDefault("Practice", "NA");
         String reading = req.queryParamOrDefault("Reading", "NA");
-        
+
         rs.assignTreatControl();
 
 //        System.out.println(age);
 //        System.out.println(gender);
 //        System.out.println(knowledge);
 //        System.out.println(reading);
-        Main.logCov(rs + "," + age + "," + gender + "," + knowledge + "," + reading);
+        Main.logCov(rs + "," + age + "," + gender + "," + practice + "," + reading);
 
         res.redirect("stage_content");
         return "ok";
@@ -57,7 +57,7 @@ public class Stages {
         } else {
             rs.stage = Main.Stage.CONTENT2;
         }
-        System.out.println("content: next stage is "+rs.stage);
+        System.out.println("content: next stage is " + rs.stage);
         res.redirect("stage_content.html");
         return "";
     }
@@ -65,17 +65,20 @@ public class Stages {
     public static String continueContent(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
         if (rs.stage == Main.Stage.CONTENT1) {
-            res.redirect("stage_test");
+            System.out.println("After content1, redirecting to distraction");
+            res.redirect("stage_distraction");
             return "";
         }
 
         // stage 2, decide between treatent and control
         if (rs.getTreatment()) {
             // treat
+            System.out.println("After content2 in TREATMENT, redirecting to speak");
             res.redirect("stage_speak");
             return "";
         } else {
             // control
+            System.out.println("After content2 in CONTROL, redirecting to distraction");
             res.redirect("stage_distraction");
             return "";
         }
@@ -101,7 +104,7 @@ public class Stages {
         String n3 = req.queryParamOrDefault("N3", "NA");
         String n4 = req.queryParamOrDefault("N4", "NA");
 
-        Main.log(req, RoteSession.getSession(req) + ": Written answers: [" + n1 + "] [" + n2 + "] [" + n3 + "] ["+ n4 + "]");
+        Main.log(req, RoteSession.getSession(req) + ": Written answers: [" + n1 + "] [" + n2 + "] [" + n3 + "] [" + n4 + "]");
 
         res.redirect("stage_distraction");
         return "";
@@ -109,14 +112,20 @@ public class Stages {
 
     public static String distraction(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        rs.stage = Main.Stage.DISTRACTION;
-        res.redirect("stage_distraction.html");
+        if (rs.stage == Main.Stage.CONTENT1) {
+            rs.stage = Main.Stage.DISTRACTION1;
+            res.redirect("stage_distraction1.html");
+        } else {
+            rs.stage = Main.Stage.DISTRACTION2;
+            res.redirect("stage_distraction2.html");
+        }
         return "";
     }
 
     public static String test(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        if (rs.stage == Main.Stage.CONTENT1) {
+        System.out.println("In test, stage is "+rs.stage);
+        if (rs.stage == Main.Stage.DISTRACTION1) {
             rs.stage = Main.Stage.TEST1;
         } else {
             rs.stage = Main.Stage.TEST2;

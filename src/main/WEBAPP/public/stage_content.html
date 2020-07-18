@@ -4,22 +4,67 @@
         <title>Rote memorization survey</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+              integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+              crossorigin="anonymous">
     </head>
     <body>
-        <div>
-            <p>Please memorize the answer to the question for each of the following content passages:</p>
+        <div style="margin-left:20px">
+            <H1>Memorization</h1>
+            <p>Please try to memorize the answer to the questions for each of the following content passages:</p>
+            <br>
             <h2 id="t1"></h2>
-            <textarea id ="c1" rows="4" cols="200"></textarea>
-            <p>Question: <span id="q1"></span></p>
+            <div style="width:50%; float:left">
+                <textarea id ="c1" rows="12" style="width:95%" wrap="soft"></textarea>
+            </div>
+            <div style="width:49%; float:left">
+                <p>Question: <span id="q11"></span></p>
+                <p>Question: <span id="q12"></span></p>
+                <p>Question: <span id="q13"></span></p>
+                <p>Question: <span id="q14"></span></p>
+                <p>Question: <span id="q15"></span></p>
+            </div>
+            <br>
+            <br>
+            <br>  
+            <br>
+            <br>
+            <br>
+            <br>   
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>   
+            <br>
             <h2 id="t2"></h2>
-            <textarea id ="c2" rows="4" cols="200"></textarea>
-            <p>Question: <span id="q2"></span></p>
-            <h2 id="t3"></h2>
-            <textarea id ="c3" rows="4" cols="200"></textarea>
-            <p>Question: <span id="q3"></span></p>
-            <h2 id="t4"></h2>
-            <textarea id ="c4" rows="4" cols="200"></textarea>
-            <p>Question: <span id="q4"></span></p>
+            <div style="width:50%; float:left">
+                <textarea id ="c2" rows="12" style="width:95%" wrap="soft"></textarea>
+            </div>
+            <div style="width:49%; float:left">
+                <p>Question: <span id="q21"></span></p>
+                <p>Question: <span id="q22"></span></p>
+                <p>Question: <span id="q23"></span></p>
+                <p>Question: <span id="q24"></span></p>
+                <p>Question: <span id="q25"></span></p>
+            </div>
+            <br>
+            <br>
+            <br>   
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>   
+            <br>
+            <br>
+            <br>   
+            <br>
+            <br>
+            <br>
+        </div>
+        <div style="wdith:100%; float:none">
+            <br>
             <br>
             <p style="text-align: center">
                 <Button onclick="location.assign('continue_content')">Continue</Button>
@@ -30,10 +75,12 @@
         <script>
             content = getContent();
             var t = "";
-            for (var i = 0; i < NUM_ITEMS; i++) {
-                document.getElementById("t"+(i+1)).innerHTML = content[i].title;
-                document.getElementById("c"+(i+1)).value = content[i].passage;
-                document.getElementById("q"+(i+1)).innerHTML = content[i].question;
+            for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
+                document.getElementById("t" + (i + 1)).innerHTML = content[i].title;
+                document.getElementById("c" + (i + 1)).value = content[i].passage;
+                for (var j = 0; j < NUM_QUESTIONS; j++) {
+                    document.getElementById("q" + (i + 1) + (j + 1)).innerHTML = content[i].questions[j];
+                }
             }
         </script>
     </body>
