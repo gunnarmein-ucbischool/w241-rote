@@ -13,16 +13,34 @@ import spark.Response;
  * @author gunnar
  */
 public class Stages {
+    
+      public static enum Stage {
+        INVALID,
+        START,
+        INFO,
+        CONTENT1,
+        READAGAIN,
+        DISTRACTION1,
+        TEST1,
+        CONTENT2,
+        CONTENT2_READ,
+        CONTENT2_SPEAK,
+        CONTENT2_WRITE,
+        DISTRACTION2,
+        TEST2,
+        RESULTS,
+        FINISHED;
+    }
 
     public static String start(Request req, Response res) {
         // startSession will assign treat/control and establish the context
         Boolean success = RoteSession.startSession(req);
         RoteSession rs = RoteSession.getSession(req);
         if (success) {
-            rs.stage = Main.Stage.INFO;
+            rs.stage = Stage.INFO;
             res.redirect("stage_info.html");
         } else {
-            rs.stage = Main.Stage.INFO;
+            rs.stage = Stage.INFO;
             res.redirect("stage_info.html");
 //            res.redirect("error.html?reason=sessionexists");
 //            rs.stage = Main.NextStage.INVALID;
@@ -52,10 +70,10 @@ public class Stages {
 
     public static String content(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        if (rs.stage == Main.Stage.INFO) {
-            rs.stage = Main.Stage.CONTENT1;
+        if (rs.stage == Stage.INFO) {
+            rs.stage = Stage.CONTENT1;
         } else {
-            rs.stage = Main.Stage.CONTENT2;
+            rs.stage = Stage.CONTENT2;
         }
         System.out.println("content: next stage is " + rs.stage);
         res.redirect("stage_content.html");
@@ -64,7 +82,7 @@ public class Stages {
 
     public static String continueContent(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        if (rs.stage == Main.Stage.CONTENT1) {
+        if (rs.stage == Stage.CONTENT1) {
             System.out.println("After content1, redirecting to distraction");
             res.redirect("stage_distraction");
             return "";
@@ -78,23 +96,31 @@ public class Stages {
             return "";
         } else {
             // control
-            System.out.println("After content2 in CONTROL, redirecting to distraction");
-            res.redirect("stage_distraction");
+            System.out.println("After content2 in CONTROL, redirecting to readagain");
+            res.redirect("stage_readagain");
             return "";
         }
     }
+    
 
+  public static String readAgain(Request req, Response res) {
+        RoteSession rs = RoteSession.getSession(req);
+        rs.stage = Stage.READAGAIN;
+        res.redirect("stage_readagain.html");
+        return "";
+    }
+  
     public static String speak(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        rs.stage = Main.Stage.CONTENT2_SPEAK;
+        rs.stage = Stage.CONTENT2_SPEAK;
         res.redirect("before_speak.html");
         return "";
     }
 
     public static String write(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        rs.stage = Main.Stage.CONTENT2_WRITE;
-        res.redirect("stage_write.html");
+        rs.stage = Stage.CONTENT2_WRITE;
+        res.redirect("before_write.html");
         return "";
     }
 
@@ -112,11 +138,11 @@ public class Stages {
 
     public static String distraction(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        if (rs.stage == Main.Stage.CONTENT1) {
-            rs.stage = Main.Stage.DISTRACTION1;
+        if (rs.stage == Stage.CONTENT1) {
+            rs.stage = Stage.DISTRACTION1;
             res.redirect("stage_distraction1.html");
         } else {
-            rs.stage = Main.Stage.DISTRACTION2;
+            rs.stage = Stage.DISTRACTION2;
             res.redirect("stage_distraction2.html");
         }
         return "";
@@ -125,10 +151,10 @@ public class Stages {
     public static String test(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
         System.out.println("In test, stage is "+rs.stage);
-        if (rs.stage == Main.Stage.DISTRACTION1) {
-            rs.stage = Main.Stage.TEST1;
+        if (rs.stage == Stage.DISTRACTION1) {
+            rs.stage = Stage.TEST1;
         } else {
-            rs.stage = Main.Stage.TEST2;
+            rs.stage = Stage.TEST2;
         }
         res.redirect("stage_test.html");
         return "";
@@ -144,7 +170,7 @@ public class Stages {
 
         Main.logTest(rs + "," + q1 + "," + q2 + "," + q3 + "," + q4);
 
-        if (rs.stage == Main.Stage.TEST1) {
+        if (rs.stage == Stage.TEST1) {
             res.redirect("stage_content");
         } else {
             res.redirect("stage_finished");
@@ -154,7 +180,7 @@ public class Stages {
 
     public static String finished(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        rs.stage = Main.Stage.FINISHED;
+        rs.stage = Stage.FINISHED;
         res.redirect("stage_finished.html");
         return "";
     }

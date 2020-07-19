@@ -30,7 +30,7 @@ public class RoteSession {
     private final String startDateTime;
     private boolean treatment;
     private int cluster;
-    public Main.Stage stage;
+    public Stages.Stage stage;
     List<Content.Item> content1;
     List<Content.Item> content2;
 
@@ -43,7 +43,7 @@ public class RoteSession {
         List<Content.Item> content = Content.getRandomItems();
         this.content1 = content.subList(0, Content.NUM_ITEMS / 2);
         this.content2 = content.subList(Content.NUM_ITEMS / 2, Content.NUM_ITEMS);
-        this.stage = Main.Stage.START;
+        this.stage = Stages.Stage.START;
 
         // treat/control is assigned later
     }
