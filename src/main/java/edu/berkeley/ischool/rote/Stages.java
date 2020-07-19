@@ -106,7 +106,7 @@ public class Stages {
   public static String readAgain(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
         rs.stage = Stage.READAGAIN;
-        res.redirect("stage_readagain.html");
+        res.redirect("before_readagain.html");
         return "";
     }
   

@@ -74,10 +74,12 @@
         <script src="JS/common.js">
         </script>
         <script>
-            content = getContent();
+            var seconds = 0;
+            var content = getContent();
             for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
                 document.getElementById("t" + (i + 1)).innerHTML = content[i].title;
                 document.getElementById("c" + (i + 1)).value = content[i].passage;
+                seconds = Math.max(seconds, content[i].seconds);
                 for (var j = 0; j < NUM_QUESTIONS; j++) {
                     document.getElementById("q" + (i + 1) + (j + 1)).innerHTML = content[i].questions[j];
                 }

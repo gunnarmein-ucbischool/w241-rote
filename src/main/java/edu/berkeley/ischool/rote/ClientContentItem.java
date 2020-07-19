@@ -18,14 +18,14 @@ public class ClientContentItem {
     
     String title;
     String passage;
+    int seconds;
     List<String> questions;
     
-    
-
     public ClientContentItem(Content.Item ci) {
         List<Question> qs = ci.questions;
         this.title = ci.title;
         this.passage = ci.passage;
+        this.seconds = ci.seconds;
         this.questions = qs.stream().map(q->q.question).collect(Collectors.toList());
     }
 }

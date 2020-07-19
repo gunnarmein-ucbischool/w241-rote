@@ -24,7 +24,7 @@ public class Content {
 
     public static final int NUM_COLUMNS = 11;
     public static final int NUM_ITEMS = 4;
-    public static final int NUM_QUESTIONS = 5;
+    public static final int NUM_QUESTIONS = 4;
     public static final int NUM_ANSWERS = 5;
     private static final ArrayList<Item> list = new ArrayList<>();
 
@@ -32,13 +32,15 @@ public class Content {
 
         int id;
         String title;
+        int seconds;
         String passage;
         public List<Content.Question> questions;
 
-        public Item(String title, String p, List<Content.Question> questions) {
+        public Item(String title, String p, String seconds, List<Content.Question> questions) {
             this.title = title;
             this.passage = p;
             this.questions = questions;
+            this.seconds = Integer.parseInt(seconds);
         }
     }
 
@@ -86,12 +88,12 @@ public class Content {
                 }
                 // Passage,Question number,Question,A,B,C,D,E,IDK,Answer
                 String title = line[0];
-                String passage = line[1];
+                String seconds = line[1];
+                String passage = line[2];
                 System.out.println("Content title: " + title);
 
                 ArrayList<Question> qs = new ArrayList<>();
                 for (int i = 0; i < NUM_QUESTIONS; i++) {
-                    String questionNumber = line[2];
                     String question = line[3];
                     String A = line[4];
                     String B = line[5];
@@ -104,13 +106,13 @@ public class Content {
                     Question q = new Question(question, A, B, C, D, E, answer);
                     qs.add(q);
                     
-                    if (i == NUM_ANSWERS-1) {
+                    if (i == NUM_QUESTIONS-1) {
                         break;
                     }
                     line = reader.readNext();
                 }
 
-                Item i = new Item(title, passage, qs);
+                Item i = new Item(title, passage, seconds, qs);
                 i.id = Content.list.size();
                 Content.list.add(i);
                 lastPassage = passage;

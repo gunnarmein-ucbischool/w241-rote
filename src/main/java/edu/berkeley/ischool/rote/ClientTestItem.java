@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class ClientTestItem {
 
     String title;
+    int seconds;
     List<TestQuestion> questions;
 
     public static class TestQuestion {
@@ -33,6 +34,7 @@ public class ClientTestItem {
     public ClientTestItem(Content.Item ci) {
         List<Question> qs = ci.questions;
         this.title = ci.title;
-        this.questions = qs.stream().map(q->new TestQuestion(q)).collect(Collectors.toList());
+        this.seconds = ci.seconds;
+        this.questions = qs.stream().map(q -> new TestQuestion(q)).collect(Collectors.toList());
     }
 }
