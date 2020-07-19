@@ -18,6 +18,23 @@ function getContent() {
     }
 }
 
+function getContentTitles() {
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "get_contenttitles", false);
+    xhr.send();
+    if (xhr.status >= 200 && xhr.status < 300) {
+        content = JSON.parse(xhr.response);
+        console.log(content);
+//        for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
+//            console.log(content[i]);
+//        }
+        return content;
+    } else {
+        console.log("dynamic content titles request failed:");
+        console.log(xhr.statusText);
+    }
+}
+
 var clock = 0;
 var clockurl = "";
 var clockform = "";

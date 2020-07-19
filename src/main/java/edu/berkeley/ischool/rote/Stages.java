@@ -117,15 +117,28 @@ public class Stages {
         String age = req.queryParamOrDefault("Age", "NA");
         String gender = req.queryParamOrDefault("Gender", "NA");
         String practice = req.queryParamOrDefault("Practice", "NA");
+        String knowledge1 = req.queryParamOrDefault("Knowledge1", "NA");
+        String knowledge2 = req.queryParamOrDefault("Knowledge2", "NA");
+        String knowledge3 = req.queryParamOrDefault("Knowledge3", "NA");
+        String knowledge4 = req.queryParamOrDefault("Knowledge4", "NA");
         String reading = req.queryParamOrDefault("Reading", "NA");
+
+        int id1 = rs.content1.get(0).id;
+        int id2 = rs.content1.get(1).id;
+        int id3 = rs.content2.get(0).id;
+        int id4 = rs.content2.get(1).id;
 
         rs.assignTreatControl();
 
-//        System.out.println(age);
-//        System.out.println(gender);
-//        System.out.println(knowledge);
-//        System.out.println(reading);
-        Main.logCov(rs + "," + age + "," + gender + "," + practice + "," + reading);
+        String cov = System.currentTimeMillis() + ","
+                + age + "," + gender + "," + practice + "," + reading + ","
+                + id1 + "," + knowledge1 + ","
+                + id2 + "," + knowledge2 + ","
+                + id3 + "," + knowledge3 + ","
+                + id4 + "," + knowledge4;
+        
+        Main.log(req, cov);
+        Main.logCov(rs + "," + System.currentTimeMillis() + "," + cov);
 
         res.redirect("stage_content");
         return "ok";
@@ -201,6 +214,8 @@ public class Stages {
     }
 
     public static String postWrite(Request req, Response res) {
+        RoteSession rs = RoteSession.getSession(req);
+
         String n11 = req.queryParamOrDefault("N11", "NA");
         String n12 = req.queryParamOrDefault("N12", "NA");
         String n13 = req.queryParamOrDefault("N13", "NA");
@@ -210,8 +225,14 @@ public class Stages {
         String n22 = req.queryParamOrDefault("N22", "NA");
         String n23 = req.queryParamOrDefault("N23", "NA");
         String n24 = req.queryParamOrDefault("N24", "NA");
-        Main.log(req, RoteSession.getSession(req) + ": Written answers: [" + n21 + "] [" + n22 + "] [" + n23 + "] [" + n24 + "]"
+
+        List<Content.Item> content = rs.content2;
+
+        Main.log(req, "Written answers: [" + n11 + "] [" + n12 + "] [" + n13 + "] [" + n14 + "]"
                 + "[" + n21 + "] [" + n22 + "] [" + n23 + "] [" + n24 + "]");
+
+        Main.logAnswers(rs + "," + System.currentTimeMillis() + "," + content.get(0).id + "," + n11 + ", " + n12 + ", " + n13 + ", " + n14 + ","
+                + content.get(0).id + n21 + "," + n22 + "," + n23 + "," + n24);
 
         res.redirect("stage_distraction");
         return "";
@@ -260,19 +281,19 @@ public class Stages {
         String t = "";
         for (int i = 0; i < Content.NUM_ITEMS / 2; i++) {
             t += content.get(i).id + ",";
-            Main.log(req, " item id: "+content.get(i).id );
+            Main.log(req, " item id: " + content.get(i).id);
             for (int q = 0; q < Content.NUM_QUESTIONS; q++) {
                 List<Content.Question> qs = content.get(i).questions;
-                t += req.queryParamOrDefault("Q" + (i + 1) + (q + 1), "NA") + "," + (qs.get(q).correctAnswer+1) + ",";
-                Main.log(req, "  "+req.queryParamOrDefault("Q" + (i + 1) + (q + 1), "NA") + "," + (qs.get(q).correctAnswer+1));
+                t += req.queryParamOrDefault("Q" + (i + 1) + (q + 1), "NA") + "," + (qs.get(q).correctAnswer + 1) + ",";
+                Main.log(req, "  (answer,correct answer) " + req.queryParamOrDefault("Q" + (i + 1) + (q + 1), "NA") + "," + (qs.get(q).correctAnswer + 1));
             }
         }
 
-        String result = rs + "," +System.currentTimeMillis() + "," + t;
-
+        String result = rs + "," + test + "," + System.currentTimeMillis() + "," + t;
         Main.logTest(result);
+
         Main.log(req, "Test results recorded for stage " + rs.stage + ":");
-        Main.log(req, " "+result);
+        Main.log(req, " " + result);
 
         if (rs.stage == Stage.TEST1) {
             res.redirect("stage_content");

@@ -25,14 +25,6 @@
                 &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="other" Name="Gender">&nbsp;Other<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="NA" Name="Gender">&nbsp;Prefer not to say<br>
                 <br>
-                How much practice with memorization do you have from drama, music, etc.?<br>
-                <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k1" Name="Practice">&nbsp;None<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k2" Name="Practice">&nbsp;Little<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k3" Name="Practice">&nbsp;Some<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k4" Name="Practice">&nbsp;A substantial amount<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="k5" Name="Practice">&nbsp;Expert<br>
-                <br>
                 How much do you read?<br>
                 <br>
                 &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="r1" Name="Reading">&nbsp;Not at all<br>
@@ -40,6 +32,47 @@
                 &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="r3" Name="Reading">&nbsp;Some<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="r4" Name="Reading">&nbsp;A substantial amount<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="r5" Name="Reading">&nbsp;All the time<br>
+                <br>
+                How much practice with memorization do you have from drama, music, etc.?<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="1" Name="Practice">&nbsp;None<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="2" Name="Practice">&nbsp;Little<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="3" Name="Practice">&nbsp;Some<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="4" Name="Practice">&nbsp;A substantial amount<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="5" Name="Practice">&nbsp;Expert<br>
+                <br>
+                How much knowledge do you have about the topic "<span id="t1"></span>"?<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="1" Name="Knowledge1">&nbsp;None<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="2" Name="Knowledge1">&nbsp;Little<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="3" Name="Knowledge1">&nbsp;Some<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="4" Name="Knowledge1">&nbsp;A substantial amount<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="5" Name="Knowledge1">&nbsp;Expert<br>
+                <br>
+                How much knowledge do you have about the topic "<span id="t2"></span>"?<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="1" Name="Knowledge2">&nbsp;None<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="2" Name="Knowledge2">&nbsp;Little<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="3" Name="Knowledge2">&nbsp;Some<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="4" Name="Knowledge2">&nbsp;A substantial amount<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="5" Name="Knowledge2">&nbsp;Expert<br>
+                <br>
+                How much knowledge do you have about the topic "<span id="t3"></span>"?<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="1" Name="Knowledge3">&nbsp;None<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="2" Name="Knowledge3">&nbsp;Little<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="3" Name="Knowledge3">&nbsp;Some<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="4" Name="Knowledge3">&nbsp;A substantial amount<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="5" Name="Knowledge3">&nbsp;Expert<br>
+                <br>
+                How much knowledge do you have about the topic "<span id="t4"></span>"?<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="1" Name="Knowledge4">&nbsp;None<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="2" Name="Knowledge4">&nbsp;Little<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="3" Name="Knowledge4">&nbsp;Some<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="4" Name="Knowledge4">&nbsp;A substantial amount<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<Input type="radio" value="5" Name="Knowledge4">&nbsp;Expert<br>
+                <br>
             </p>
             <br>
             <br>
@@ -52,6 +85,10 @@
         </script>
         <script>
             checkForced();
+            var contentTitles = getContentTitles();
+            for (var i = 0; i < NUM_ITEMS_PER_PAGE*2; i++) {
+                document.getElementById("t" + (i + 1)).innerHTML = contentTitles[i];
+            }
         </script>
     </body>
 </html>

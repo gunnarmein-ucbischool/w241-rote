@@ -85,9 +85,10 @@ public class Admin {
         try {
             ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(res.raw().getOutputStream()));
             for (String logFileName : new String[]{Main.logFileName, Main.covFileName, Main.ansFileName, Main.testFileName}) {
-                logFileName = Main.logs + logFileName;
-
                 File file = new File(logFileName);
+                 if (!file.exists()) {
+                     continue;
+                 }
                 BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
                 ZipEntry zipEntry = new ZipEntry(file.getName());
 

@@ -26,7 +26,7 @@ public class RoteSession {
 
     private String id = "";
     private final Session session;
-    private final long start;
+    public final long start;
     private final String startDateTime;
     private boolean treatment;
     private int cluster;
@@ -62,7 +62,7 @@ public class RoteSession {
         // if (req.session().isNew()) {
         RoteSession rs = new RoteSession(req.session());
         req.session().attribute("rote_session", rs);
-        Main.log(req, "Rote: New session, time: "+rs.start);
+        Main.log(req, "Rote: New session, time: " + rs.start);
         return true;
         // }
         // return false;
@@ -148,5 +148,13 @@ public class RoteSession {
         }
         Main.log(req, "getcontent: Unexpected stage, was: " + rs.stage);
         return null;
+    }
+
+    public static List<String> getContentTitles(Request req) {
+        RoteSession rs = getSession(req);
+        Main.log(req, "delivering client content titles");
+        List<String> titles = rs.content1.stream().map(ci -> ci.title).collect(Collectors.toList());
+        titles.addAll(rs.content2.stream().map(ci -> ci.title).collect(Collectors.toList()));
+        return titles;
     }
 }

@@ -17,7 +17,7 @@
             <br>
             Live log:<br>
             <br>
-            <textarea id="out" rows="20" cols="100"></textarea>
+            <textarea id="out" rows="20" cols="120"></textarea>
         </div>
         <script>
             function forceAssignment(group) {
@@ -37,16 +37,18 @@
                 xhr.send();
                 xhr.onload = function () {
                     if (xhr.status >= 200 && xhr.status < 300) {
-                        document.getElementById("out").value = xhr.response;
-                        document.getElementById("out").scrollTop = document.getElementById("out").scrollHeight;
+                        if (document.getElementById("out").value !== xhr.response) {
+                            document.getElementById("out").value = xhr.response;
+                            document.getElementById("out").scrollTop = document.getElementById("out").scrollHeight;
+                        }
                         //console.log(xhr.response);
                     } else {
                         console.log("getupdate: " + xhr.statusText);
                     }
                 };
             }
-            
-            setInterval (update,500);
+
+            setInterval(update, 500);
         </script>
     </body>
 

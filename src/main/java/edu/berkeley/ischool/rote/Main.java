@@ -73,7 +73,7 @@ public class Main implements SparkApplication {
             }
         });
         post("adminlogin", (req, res) -> Admin.adminLogin(req, res));
-        get("admin/getlogfile", (req, res) -> Admin.getLogFiles(req, res));
+        get("admin/getlogfiles", (req, res) -> Admin.getLogFiles(req, res));
         get("admin/headers", (req, res) -> Admin.getHeaders(req));
         put("admin/forceassignment", (req, res) -> Admin.forceAssignment(req));
         get("admin/getlog", (req, res) -> Admin.getLog(req, res));
@@ -86,6 +86,7 @@ public class Main implements SparkApplication {
         get("get_forcedsettings", (req, res) -> "" + Main.forceAssignment);
         get("current_stage", (req, res) -> Stages.currentStage(req, res));
         get("stage_info", (req, res) -> Stages.start(req, res));
+        get("get_contenttitles", (req, res) -> RoteSession.getContentTitles(req), Main::render);
         post("post_info", (req, res) -> Stages.postInfo(req, res));
 
         get("stage_content", (req, res) -> Stages.content(req, res));
@@ -130,15 +131,51 @@ public class Main implements SparkApplication {
     }
 
     public static void logCov(String s) {
-        logToFile(covFileName, s);
+        try {
+            File f = new File(covFileName);
+            if (!f.exists()) {
+                f.createNewFile();
+                logToFile(covFileName, "session_id,session_start_time,cluster,treat,cov_time,"
+                        +"age,gender,"
+                        +"practice,"
+                        +"item_id1,knowledge1,"
+                        +"item_id2,knowledge2,"
+                        +"item_id3,knowledge3,"
+                        +"item_id4,knowledge4\n"
+                );
+            }
+        } catch (Exception e) {
+        }
+        logToFile(covFileName, s + "\n");
     }
 
     public static void logAnswers(String s) {
-        logToFile(ansFileName, s);
+        try {
+            File f = new File(ansFileName);
+            if (!f.exists()) {
+                f.createNewFile();
+                logToFile(ansFileName, "session_id,session_start_time,cluster,treat,write_time,"
+                        + "item_id1,a11,a12,a13,a14,"
+                        + "item_id2,a21,a22,a23,a24\n");
+            }
+        } catch (Exception e) {
+        }
+        logToFile(ansFileName, s + "\n");
     }
 
     public static void logTest(String s) {
-        logToFile(testFileName, s);
+        try {
+            File f = new File(testFileName);
+            if (!f.exists()) {
+                f.createNewFile();
+                logToFile(testFileName, "session_id,session_start_time,cluster,treat,test,test_start_time,"
+                        + "item_id1,a11,c11,a12,c12,a13,c13,a14,c14,"
+                        + "item_id2,a21,c21,a22,c22,a23,c23,a24,c24,"
+                        + "blank_column\n");
+            }
+        } catch (Exception e) {
+        }
+        logToFile(testFileName, s + "\n");
     }
 
     private static void logToFile(String logFileName, String data) {
