@@ -63,17 +63,18 @@
             <br>
             <br>
         </div>
-        <div style="wdith:100%; float:none">
+        <div style="width:100%; float:none">
             <br>
             <br>
             <p style="text-align: center">
-                <Button onclick="location.assign('continue_content')">Continue</Button>
+                <Button onclick="deleteContentAndGo('continue_content')">Continue</Button>
             </p>
             <div style="position:absolute; top: 1%; left: 93%" ><h1><span id ='clock'></span></h1></div>
         </div>
         <script src="JS/common.js">
         </script>
         <script>
+            checkStage("CONTENT1,CONTENT2");
             checkForced();
             var seconds = 0;
             var content = getContent();
@@ -88,6 +89,7 @@
             }
             
             createClock(seconds, "continue_content");
+            //deleteContentOnUnload();
         </script>
     </body>
 </html>

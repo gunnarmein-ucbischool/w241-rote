@@ -32,6 +32,66 @@ public class Stages {
         FINISHED;
     }
 
+    public static String currentStage(Request req, Response res) {
+        RoteSession rs = RoteSession.getSession(req);
+        
+        // are we in a plausible stage for this page?
+        String possible = req.queryParamOrDefault("stage", "");
+        String[] stages = possible.split(",");
+        for (String stage : stages) {
+            stage = stage.trim();
+            if (stage.equals(rs.stage.toString())) {
+                return "ok";
+            }
+        }
+
+        // no, recommend redirects
+        String url;
+        switch (rs.stage) {
+            case START:
+                url = "index.html";
+                break;
+            case INFO:
+                url = "stage_info.html";
+                break;
+            case CONTENT1:
+                url = "stage_content.html";
+                break;
+            case CONTENT2_READAGAIN:
+                url = "stage_content.html";
+                break;
+            case DISTRACTION1:
+                url = "stage_distraction.html";
+                break;
+            case TEST1:
+                url = "stage_test.html";
+                break;
+            case CONTENT2:
+                url = "stage_content.html";
+                break;
+            case CONTENT2_SPEAK:
+                url = "stage_speak.html";
+                break;
+            case CONTENT2_WRITE:
+                url = "stage_write.html";
+                break;
+            case DISTRACTION2:
+                url = "stage_distraction.hml";
+                break;
+            case TEST2:
+                url = "stage_test.html";
+                break;
+            case FINISHED:
+                url = "stage_finished.html";
+                break;
+            case INVALID:
+            default:
+                url = "index.html";
+        }
+        System.out.println("Wrong stage, redirecting to: "+url);
+        return url;
+    }
+
     public static String start(Request req, Response res) {
         // startSession will assign treat/control and establish the context
         Boolean success = RoteSession.startSession(req);
@@ -72,9 +132,13 @@ public class Stages {
         RoteSession rs = RoteSession.getSession(req);
         if (rs.stage == Stage.INFO) {
             rs.stage = Stage.CONTENT1;
-        } else {
+        } else if (rs.stage == Stage.TEST1) {
             rs.stage = Stage.CONTENT2;
+        } else {
+            System.out.println("Invalid stage in 'content': " + rs.stage);
+            return "";
         }
+
         System.out.println("content: next stage is " + rs.stage);
         res.redirect("before_content.html");
         return "";

@@ -82,6 +82,7 @@ public class Main implements SparkApplication {
 
         // main functionality
         get("get_forcedsettings", (req, res) -> ""+Main.forceAssignment);
+        get("current_stage", (req, res) -> Stages.currentStage(req, res));
         get("stage_info", (req, res) -> Stages.start(req, res));
         post("post_info", (req, res) -> Stages.postInfo(req, res));
 

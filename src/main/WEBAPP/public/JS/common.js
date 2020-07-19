@@ -68,3 +68,39 @@ function checkForced() {
     }
 }
 
+function checkStage(stage) {
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "current_stage?stage=" + stage, false);
+    xhr.send();
+    if (xhr.status >= 200 && xhr.status < 300) {
+        if (xhr.response !== "ok") {
+            location.assign(xhr.response);
+        }
+    } else {
+        console.log("check for current stage failed: ");
+        console.log(xhr.statusText);
+    }
+
+}
+
+
+function deleteContent() {
+    document.getElementById("content").innerHTML = "";
+}
+
+function deleteContentAndGo(url, formid) {
+    setTimeout(function () {
+        if (url !== null) {
+            deleteContent();
+            location.assign(url);
+        } else {
+            document.getElementById(formid).submit();
+            deleteContent();
+        }
+    }, 100);
+}
+
+function deleteContentOnUnload() {
+    var body = document.getElementsByTagName("BODY")[0];
+    body.onbeforeunload = deleteContent;
+}
