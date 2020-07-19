@@ -36,7 +36,8 @@ public class Content {
         String passage;
         public List<Content.Question> questions;
 
-        public Item(String title, String p, String seconds, List<Content.Question> questions) {
+        public Item(int id, String title, String p, String seconds, List<Content.Question> questions) {
+            this.id = id;
             this.title = title;
             this.passage = p;
             this.questions = questions;
@@ -49,7 +50,7 @@ public class Content {
 
         public String question;
         public String[] answers;
-        int correctAnswer;
+        public int correctAnswer;
 
         public Question(String q, String A, String B, String C, String D, String E, String answer) {
             this.question = q;
@@ -82,6 +83,7 @@ public class Content {
             CSVReader reader = new CSVReader(isr);
             String[] line;
             reader.readNext(); // skip header
+            int id = 1;
             while ((line = reader.readNext()) != null) {
                 if (line.length != NUM_COLUMNS) {
                     System.err.println("ERROR: Incorrect number of columns in CSV content1.csv: " + line.length);
@@ -112,11 +114,11 @@ public class Content {
                     line = reader.readNext();
                 }
 
-                Item i = new Item(title, passage, seconds, qs);
-                i.id = Content.list.size();
+                Item i = new Item(id, title, passage, seconds, qs);
                 Content.list.add(i);
                 lastPassage = passage;
                 lastTitle = title;
+                id++;
             }
         } catch (CsvValidationException | IOException e) {
             System.err.println("ERROR: Reading content files: " + e);

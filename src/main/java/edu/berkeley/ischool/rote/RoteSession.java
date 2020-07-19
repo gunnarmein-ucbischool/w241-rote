@@ -17,7 +17,7 @@ import spark.Session;
  */
 public class RoteSession {
 
-    private static final long systemStart = System.currentTimeMillis();
+    public static final long systemStart = System.currentTimeMillis();
     private static final long INITIAL_PERIOD = (1000 * 60) * 60; // first hour is cluster size =1
     private static final long CLUSTER_PERIOD = (1000 * 60) * 5;  // after that, assignment is in 5-minute start time clusters
     private static boolean currentClusterAssignment;
@@ -60,8 +60,9 @@ public class RoteSession {
 
     public static boolean startSession(Request req) {
         // if (req.session().isNew()) {
-        req.session().attribute("rote_session", new RoteSession(req.session()));
-        Main.log(req, "Rote: New session: " + ((RoteSession) req.session().attribute("rote_session")).getID());
+        RoteSession rs = new RoteSession(req.session());
+        req.session().attribute("rote_session", rs);
+        Main.log(req, "Rote: New session, time: "+rs.start);
         return true;
         // }
         // return false;
@@ -81,7 +82,7 @@ public class RoteSession {
 
     @Override
     public String toString() {
-        return id + "," + cluster + "," + start + "," + treatment;
+        return id + "," + start + "," + cluster + "," + treatment;
     }
 
     private boolean newTreatControl() {
@@ -102,7 +103,7 @@ public class RoteSession {
                 RoteSession.currentCluster++;
                 this.cluster = RoteSession.currentCluster;
             }
-            System.out.println(this + ": Assigned to treatment: " + this.treatment+", cluster: "+this.cluster);
+            Main.log(this, "Assigned to treatment: " + this.treatment + ", cluster: " + this.cluster);
             return;
         }
 
@@ -116,12 +117,12 @@ public class RoteSession {
             }
             this.cluster = RoteSession.currentCluster;
             this.treatment = RoteSession.currentClusterAssignment;
-            System.out.println(this + ": Assigned to treatment: " + this.treatment+", cluster: "+this.cluster);
+            Main.log(this, "Assigned to treatment: " + this.treatment + ", cluster: " + this.cluster);
         }
     }
-    
+
     public void setStage(Stages.Stage s) {
-        System.out.println("Setting stage: "+s);
+        Main.log(this, "Setting stage: " + s);
         this.stage = s;
     }
 
@@ -129,23 +130,23 @@ public class RoteSession {
         RoteSession rs = getSession(req);
         switch (rs.stage) {
             case CONTENT1:
-                System.out.println("delivering client content item "+rs.stage);
+                Main.log(req, "delivering client content item " + rs.stage);
                 return rs.content1.stream().map(ci -> new ClientContentItem(ci)).collect(Collectors.toList());
             case TEST1:
-                System.out.println("delivering client test item "+rs.stage);
+                Main.log(req, "delivering client test item " + rs.stage);
                 return rs.content1.stream().map(ci -> new ClientTestItem(ci)).collect(Collectors.toList());
-                
+
             case CONTENT2:
             case CONTENT2_READAGAIN:
             case CONTENT2_SPEAK:
             case CONTENT2_WRITE:
-                System.out.println("delivering client content item "+rs.stage);
+                Main.log(req, "delivering client content item " + rs.stage);
                 return rs.content2.stream().map(ci -> new ClientContentItem(ci)).collect(Collectors.toList());
             case TEST2:
-                System.out.println("delivering client test item "+rs.stage);
+                Main.log(req, "delivering client test item " + rs.stage);
                 return rs.content2.stream().map(ci -> new ClientTestItem(ci)).collect(Collectors.toList());
         }
-        System.out.println("getcontent: Unexpected stage, was: "+rs.stage);
+        Main.log(req, "getcontent: Unexpected stage, was: " + rs.stage);
         return null;
     }
 }

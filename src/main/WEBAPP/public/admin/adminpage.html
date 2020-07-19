@@ -7,20 +7,17 @@
     </head>
     <body>
         <div>
-            <a href="getlogfile?logfilename=rote_cov.csv">Download covariates csv</a><br>
-            <a href="getlogfile?logfilename=rote_test.csv">Download test results csv</a><br>
-            <br>
-            <a href="getlogfile?logfilename=rote_log.txt">Download log</a><br>
+            <a href="getlogfiles">Download logs</a><br>
             <br>
             <button onclick="forceAssignment(0)">Force control assignment</button>
             <button onclick="forceAssignment(1)">Force treatment assignment</button>
             <button onclick="forceAssignment(-1)">Reset to random cluster assignment</button><br>
             <br>
-            <a href="start">Back to start</a><br>
-
-            Tomcat standard output:
-
-            <textarea id="out" rows="10" cols="200"></textarea>
+            <a href="start">Back to start page</a><br>
+            <br>
+            Live log:<br>
+            <br>
+            <textarea id="out" rows="20" cols="100"></textarea>
         </div>
         <script>
             function forceAssignment(group) {
@@ -36,11 +33,12 @@
 
             function update() {
                 let xhr = new XMLHttpRequest();
-                xhr.open("get", "getcatalina", true);
+                xhr.open("get", "getlog", true);
                 xhr.send();
                 xhr.onload = function () {
                     if (xhr.status >= 200 && xhr.status < 300) {
                         document.getElementById("out").value = xhr.response;
+                        document.getElementById("out").scrollTop = document.getElementById("out").scrollHeight;
                         //console.log(xhr.response);
                     } else {
                         console.log("getupdate: " + xhr.statusText);
@@ -48,7 +46,7 @@
                 };
             }
             
-            update();
+            setInterval (update,500);
         </script>
     </body>
 

@@ -9,9 +9,13 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import spark.Request;
@@ -52,37 +56,47 @@ public class Admin {
         return "forceAssignment set to:" + a;
     }
 
-    public static Object getCatalina(Request req, Response res) {
-        String name = System.getProperty("user.dir");
-        name = name.substring(0, name.length() - 3);
-        name += "logs/catalina.out";
+    public static Object getLog(Request req, Response res) {
 
         try {
-            System.out.println("Trying to read: "+name);
-            return Files.readString(Paths.get(name));
-        } catch (Exception e) {
-            System.out.println("could not read catalina.out: "+name);
+            File f = new File(Main.logFileName);
+            InputStream is = new FileInputStream(f);
+            Scanner sc = new Scanner(is);
+            String s = "";
+            while (sc.hasNextLine()) {
+                s += sc.nextLine() + "\n";
+            }
+            if (s.length() > 5000) {
+                return s.substring(s.length() - 5000);
+            } else {
+                return s;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return "could not read catalina.out: "+name;
+        return "fail";
     }
 
-    public static Object getLogFile(Request req, Response res) {
-        String logFileName = Main.logs + "/" + req.queryParamOrDefault("logfilename", "none");
+    public static Object getLogFiles(Request req, Response res) {
 
-        File file = new File(logFileName);
         res.raw().setContentType("application/octet-stream");
-        res.raw().setHeader("Content-Disposition", "attachment; filename=" + file.getName() + ".zip");
+        res.raw().setHeader("Content-Disposition", "attachment; filename=logs.zip");
 
         try {
             ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(res.raw().getOutputStream()));
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
-            ZipEntry zipEntry = new ZipEntry(file.getName());
+            for (String logFileName : new String[]{Main.logFileName, Main.covFileName, Main.ansFileName, Main.testFileName}) {
+                logFileName = Main.logs + logFileName;
 
-            zipOutputStream.putNextEntry(zipEntry);
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = bufferedInputStream.read(buffer)) > 0) {
-                zipOutputStream.write(buffer, 0, len);
+                File file = new File(logFileName);
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
+                ZipEntry zipEntry = new ZipEntry(file.getName());
+
+                zipOutputStream.putNextEntry(zipEntry);
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = bufferedInputStream.read(buffer)) > 0) {
+                    zipOutputStream.write(buffer, 0, len);
+                }
             }
             zipOutputStream.flush();
             zipOutputStream.close();

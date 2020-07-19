@@ -5,6 +5,7 @@
  */
 package edu.berkeley.ischool.rote;
 
+import java.util.List;
 import spark.Request;
 import spark.Response;
 
@@ -31,18 +32,17 @@ public class Stages {
         RESULTS,
         FINISHED;
     }
-    
 
     public static String currentStage(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
 
         // are we in a plausible stage for this page?
         String possible = req.queryParamOrDefault("stage", "");
-        System.out.println("Checking, current stage: " + rs.stage);
+        Main.log(req, "Checking, current stage: " + rs.stage);
         String[] stages = possible.split(",");
         for (String stage : stages) {
             stage = stage.trim();
-            System.out.println("  Plausible stage: " + stage);
+            Main.log(req, "  Plausible stage: " + stage);
             if (stage.equals(rs.stage.toString())) {
                 return "ok";
             }
@@ -91,7 +91,7 @@ public class Stages {
             default:
                 url = "index.html";
         }
-        System.out.println("Wrong stage, redirecting to: " + url);
+        Main.log(req, "Wrong stage, redirecting to: " + url);
         return url;
     }
 
@@ -138,40 +138,45 @@ public class Stages {
         } else if (rs.stage == Stage.TEST1) {
             rs.setStage(Stage.CONTENT2);
         } else {
-            System.out.println("Invalid stage in 'content': " + rs.stage);
+            Main.log(req, "Invalid stage in 'content': " + rs.stage);
             return "";
         }
 
-        System.out.println("content: next stage is " + rs.stage);
+        Main.log(req, "content: next stage is " + rs.stage);
         res.redirect("before_content.html");
         return "";
     }
 
     public static String continueContent(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        if (rs.stage == Stage.CONTENT1) {
-            System.out.println("After content1, redirecting to distraction");
+        if (rs.stage == Stage.CONTENT1 || rs.stage == Stage.DISTRACTION1) {
+            Main.log(req, "After content1, redirecting to distraction");
             res.redirect("stage_distraction");
             return "";
         }
 
-        // stage 2, decide between treatent and control
-        if (rs.getTreatment()) {
-            // treat
-            System.out.println("After content2 in TREATMENT, redirecting to speak");
-            res.redirect("stage_speak");
-            return "";
-        } else {
-            // control
-            if (rs.stage == Stage.CONTENT2_READAGAIN) {
-                System.out.println("After content2 in CONTROL, redirecting to disctraction");
-                res.redirect("stage_distraction");
+        if (rs.stage == Stage.CONTENT2 || rs.stage == Stage.DISTRACTION2) {
+            // stage 2, decide between treatent and control
+            if (rs.getTreatment()) {
+                // treat
+                Main.log(req, "After content2 in TREATMENT, redirecting to speak");
+                res.redirect("stage_speak");
+                return "";
             } else {
-                System.out.println("After content2 in CONTROL, redirecting to readagain");
-                res.redirect("stage_readagain");
+                // control
+                if (rs.stage == Stage.CONTENT2_READAGAIN) {
+                    Main.log(req, "After content2 in CONTROL, redirecting to disctraction");
+                    res.redirect("stage_distraction");
+                } else {
+                    Main.log(req, "After content2 in CONTROL, redirecting to readagain");
+                    res.redirect("stage_readagain");
+                }
+                return "";
             }
-            return "";
         }
+
+        res.redirect("index.html");
+        return "wrong stage";
     }
 
     public static String readAgain(Request req, Response res) {
@@ -196,12 +201,17 @@ public class Stages {
     }
 
     public static String postWrite(Request req, Response res) {
-        String n1 = req.queryParamOrDefault("N1", "NA");
-        String n2 = req.queryParamOrDefault("N2", "NA");
-        String n3 = req.queryParamOrDefault("N3", "NA");
-        String n4 = req.queryParamOrDefault("N4", "NA");
+        String n11 = req.queryParamOrDefault("N11", "NA");
+        String n12 = req.queryParamOrDefault("N12", "NA");
+        String n13 = req.queryParamOrDefault("N13", "NA");
+        String n14 = req.queryParamOrDefault("N14", "NA");
 
-        Main.log(req, RoteSession.getSession(req) + ": Written answers: [" + n1 + "] [" + n2 + "] [" + n3 + "] [" + n4 + "]");
+        String n21 = req.queryParamOrDefault("N21", "NA");
+        String n22 = req.queryParamOrDefault("N22", "NA");
+        String n23 = req.queryParamOrDefault("N23", "NA");
+        String n24 = req.queryParamOrDefault("N24", "NA");
+        Main.log(req, RoteSession.getSession(req) + ": Written answers: [" + n21 + "] [" + n22 + "] [" + n23 + "] [" + n24 + "]"
+                + "[" + n21 + "] [" + n22 + "] [" + n23 + "] [" + n24 + "]");
 
         res.redirect("stage_distraction");
         return "";
@@ -209,7 +219,7 @@ public class Stages {
 
     public static String distraction(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        if (rs.stage == Stage.CONTENT1) {
+        if (rs.stage == Stage.CONTENT1 || rs.stage == Stage.DISTRACTION1) {
             rs.setStage(Stage.DISTRACTION1);
             res.redirect("before_distraction1.html");
         } else {
@@ -221,7 +231,7 @@ public class Stages {
 
     public static String test(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        System.out.println("In test, stage is " + rs.stage);
+        Main.log(req, "In test, stage is " + rs.stage);
         if (rs.stage == Stage.DISTRACTION1) {
             rs.setStage(Stage.TEST1);
         } else {
@@ -234,12 +244,35 @@ public class Stages {
     public static String postTest(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
 
-        String q1 = req.queryParamOrDefault("Q1", "NA");
-        String q2 = req.queryParamOrDefault("Q2", "NA");
-        String q3 = req.queryParamOrDefault("Q3", "NA");
-        String q4 = req.queryParamOrDefault("Q4", "NA");
+        List<Content.Item> content;
+        String test;
+        if (rs.stage == Stage.TEST1) {
+            content = rs.content1;
+            test = "baseline";
+        } else if (rs.stage == Stage.TEST2) {
+            content = rs.content2;
+            test = "experiment";
+        } else {
+            Main.log(req, "Wrong stage for recording test results: " + rs.stage);
+            return "fail";
+        }
 
-        Main.logTest(rs + "," + q1 + "," + q2 + "," + q3 + "," + q4);
+        String t = "";
+        for (int i = 0; i < Content.NUM_ITEMS / 2; i++) {
+            t += content.get(i).id + ",";
+            Main.log(req, " item id: "+content.get(i).id );
+            for (int q = 0; q < Content.NUM_QUESTIONS; q++) {
+                List<Content.Question> qs = content.get(i).questions;
+                t += req.queryParamOrDefault("Q" + (i + 1) + (q + 1), "NA") + "," + (qs.get(q).correctAnswer+1) + ",";
+                Main.log(req, "  "+req.queryParamOrDefault("Q" + (i + 1) + (q + 1), "NA") + "," + (qs.get(q).correctAnswer+1));
+            }
+        }
+
+        String result = rs + "," +System.currentTimeMillis() + "," + t;
+
+        Main.logTest(result);
+        Main.log(req, "Test results recorded for stage " + rs.stage + ":");
+        Main.log(req, " "+result);
 
         if (rs.stage == Stage.TEST1) {
             res.redirect("stage_content");

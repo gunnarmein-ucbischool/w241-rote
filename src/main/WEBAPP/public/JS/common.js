@@ -83,19 +83,17 @@ function checkStage(stage) {
 }
 
 
-function deleteContent() {
-    document.getElementById("content").innerHTML = "";
+function justDeleteContent() {
+    document.getElementById("content").innerHTML = "<br><h4>Content secured</h4><br>";
 }
 
-function deleteContentAndGo(url, formid) {
+function deleteContent(button, url, formid) {
     if (url !== null) {
-        deleteContent();
-        setTimeout(function () {
+        justDeleteContent();
+        button.innerText = "Continue";
+        button.onclick = function () {
             location.assign(url);
-        }, 1000);
-    } else {
-        document.getElementById(formid).submit();
-        deleteContent();
+        };
     }
 }
 

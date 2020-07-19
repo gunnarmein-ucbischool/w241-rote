@@ -78,9 +78,11 @@ and open the template in the editor.
                 for (var j = 0; j < NUM_QUESTIONS; j++) {
                     t += "<p><b>" + content[i].questions[j].question + "</b><br>";
                     for (var k = 0; k < NUM_ANSWERS; k++) {
-                        t += "&nbsp;&nbsp;&nbsp;&nbsp;<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;" + content[i].questions[j].answers[k] + "<br>";
+                        t += "&nbsp;&nbsp;&nbsp;&nbsp;<Input type=\"radio\" value=\"" + (k + 1) +
+                                "\" Name=\"Q" + (i + 1) + "" + (j + 1) + "\">&nbsp;" + content[i].questions[j].answers[k] + "<br>";
                     }
-                    t += "&nbsp;&nbsp;&nbsp;&nbsp;<Input type=\"radio\" value=\"a" + i + "" + j + "\" Name=\"Q" + i + "\">&nbsp;I don\'t remember<br></p>";
+                    t += "&nbsp;&nbsp;&nbsp;&nbsp;<Input type=\"radio\" value=\"" + (k + 1) +
+                            "\" Name=\"Q" + (i + 1) + "" + (j + 1) + "\">&nbsp;I don\'t remember<br></p>";
                 }
                 t += "</div>";
             }
