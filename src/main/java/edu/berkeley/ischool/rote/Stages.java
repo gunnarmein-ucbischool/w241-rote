@@ -31,15 +31,18 @@ public class Stages {
         RESULTS,
         FINISHED;
     }
+    
 
     public static String currentStage(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        
+
         // are we in a plausible stage for this page?
         String possible = req.queryParamOrDefault("stage", "");
+        System.out.println("Checking, current stage: " + rs.stage);
         String[] stages = possible.split(",");
         for (String stage : stages) {
             stage = stage.trim();
+            System.out.println("  Plausible stage: " + stage);
             if (stage.equals(rs.stage.toString())) {
                 return "ok";
             }
@@ -88,7 +91,7 @@ public class Stages {
             default:
                 url = "index.html";
         }
-        System.out.println("Wrong stage, redirecting to: "+url);
+        System.out.println("Wrong stage, redirecting to: " + url);
         return url;
     }
 
@@ -97,10 +100,10 @@ public class Stages {
         Boolean success = RoteSession.startSession(req);
         RoteSession rs = RoteSession.getSession(req);
         if (success) {
-            rs.stage = Stage.INFO;
+            rs.setStage(Stage.INFO);
             res.redirect("stage_info.html");
         } else {
-            rs.stage = Stage.INFO;
+            rs.setStage(Stage.INFO);
             res.redirect("stage_info.html");
 //            res.redirect("error.html?reason=sessionexists");
 //            rs.stage = Main.NextStage.INVALID;
@@ -131,9 +134,9 @@ public class Stages {
     public static String content(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
         if (rs.stage == Stage.INFO) {
-            rs.stage = Stage.CONTENT1;
+            rs.setStage(Stage.CONTENT1);
         } else if (rs.stage == Stage.TEST1) {
-            rs.stage = Stage.CONTENT2;
+            rs.setStage(Stage.CONTENT2);
         } else {
             System.out.println("Invalid stage in 'content': " + rs.stage);
             return "";
@@ -173,21 +176,21 @@ public class Stages {
 
     public static String readAgain(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        rs.stage = Stage.CONTENT2_READAGAIN;
+        rs.setStage(Stage.CONTENT2_READAGAIN);
         res.redirect("before_readagain.html");
         return "";
     }
 
     public static String speak(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        rs.stage = Stage.CONTENT2_SPEAK;
+        rs.setStage(Stage.CONTENT2_SPEAK);
         res.redirect("before_speak.html");
         return "";
     }
 
     public static String write(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        rs.stage = Stage.CONTENT2_WRITE;
+        rs.setStage(Stage.CONTENT2_WRITE);
         res.redirect("before_write.html");
         return "";
     }
@@ -207,10 +210,10 @@ public class Stages {
     public static String distraction(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
         if (rs.stage == Stage.CONTENT1) {
-            rs.stage = Stage.DISTRACTION1;
+            rs.setStage(Stage.DISTRACTION1);
             res.redirect("before_distraction1.html");
         } else {
-            rs.stage = Stage.DISTRACTION2;
+            rs.setStage(Stage.DISTRACTION2);
             res.redirect("before_distraction2.html");
         }
         return "";
@@ -220,9 +223,9 @@ public class Stages {
         RoteSession rs = RoteSession.getSession(req);
         System.out.println("In test, stage is " + rs.stage);
         if (rs.stage == Stage.DISTRACTION1) {
-            rs.stage = Stage.TEST1;
+            rs.setStage(Stage.TEST1);
         } else {
-            rs.stage = Stage.TEST2;
+            rs.setStage(Stage.TEST2);
         }
         res.redirect("before_test.html");
         return "";
@@ -248,7 +251,7 @@ public class Stages {
 
     public static String finished(Request req, Response res) {
         RoteSession rs = RoteSession.getSession(req);
-        rs.stage = Stage.FINISHED;
+        rs.setStage(Stage.FINISHED);
         res.redirect("stage_finished.html");
         return "";
     }

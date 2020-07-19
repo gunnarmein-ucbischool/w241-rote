@@ -1,7 +1,6 @@
 var NUM_ITEMS_PER_PAGE = 2;
-var NUM_QUESTIONS = 4;// really 5
+var NUM_QUESTIONS = 4; // really 5
 var NUM_ANSWERS = 5;
-
 function getContent() {
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "get_content", false);
@@ -89,15 +88,15 @@ function deleteContent() {
 }
 
 function deleteContentAndGo(url, formid) {
-    setTimeout(function () {
-        if (url !== null) {
-            deleteContent();
+    if (url !== null) {
+        deleteContent();
+        setTimeout(function () {
             location.assign(url);
-        } else {
-            document.getElementById(formid).submit();
-            deleteContent();
-        }
-    }, 100);
+        }, 1000);
+    } else {
+        document.getElementById(formid).submit();
+        deleteContent();
+    }
 }
 
 function deleteContentOnUnload() {

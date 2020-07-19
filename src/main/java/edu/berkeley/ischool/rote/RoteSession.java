@@ -119,6 +119,11 @@ public class RoteSession {
             System.out.println(this + ": Assigned to treatment: " + this.treatment+", cluster: "+this.cluster);
         }
     }
+    
+    public void setStage(Stages.Stage s) {
+        System.out.println("Setting stage: "+s);
+        this.stage = s;
+    }
 
     public static List getContent(Request req) {
         RoteSession rs = getSession(req);
