@@ -9,9 +9,9 @@
               crossorigin="anonymous">
     </head>
     <body>
-        <div style="margin-left:50px;margin-right:50px;margin-top: 20px">
+        <div style="margin-left:50px;margin-right:50px;margin-top: 20px" id="content">
             <H2 style="text-align: center">Memorization</h2>
-            <h4 style="text-align: center">Please try to memorize the answer to the questions for each of the following content passages:</h4>
+            <h4 style="text-align: center">Please memorize the answer to the questions for each of the following content passages:</h4>
             <br>
             <h2 id="t1"></h2>
             <div style="width:50%; float:left">
@@ -69,14 +69,16 @@
             <p style="text-align: center">
                 <Button onclick="location.assign('continue_content')">Continue</Button>
             </p>
+            <div style="position:absolute; top: 1%; left: 93%" ><h1><span id ='clock'></span></h1></div>
         </div>
-        <div style="position:absolute; top: 10px; left: 10px" id ='clock'><h1>0:00</h1></div>
         <script src="JS/common.js">
         </script>
         <script>
+            checkForced();
             var seconds = 0;
             var content = getContent();
             for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
+                console.log(content[i]);
                 document.getElementById("t" + (i + 1)).innerHTML = content[i].title;
                 document.getElementById("c" + (i + 1)).value = content[i].passage;
                 seconds += content[i].seconds;
@@ -84,17 +86,8 @@
                     document.getElementById("q" + (i + 1) + (j + 1)).innerHTML = content[i].questions[j];
                 }
             }
-            function updateClock() {
-                seconds -= 1;
-                if (seconds >= 0) {
-                    var s = "" + Math.floor(seconds / 60) + ":" + Math.floor(seconds % 60);
-                    document.getElementById("clock").innerHTML = "<h1>"+s+"</h1>";
-                } else {
-                    location.assign('continue_content');
-                }
-            }
-
-            setInterval(updateClock, 1000);
+            
+            createClock(seconds, "continue_content");
         </script>
     </body>
 </html>

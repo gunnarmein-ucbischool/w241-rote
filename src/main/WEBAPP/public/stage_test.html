@@ -15,7 +15,7 @@ and open the template in the editor.
     <body>
         <div style="margin-left:20px;margin-top: 20px">
             <H2 style="text-align: center">Time to put your memory to the test!</h2>
-            <form action="post_test" method="post">
+            <form action="post_test" method="post" id="test">
                 <p id="content"></p>
                 <br>
                 <br>
@@ -60,16 +60,21 @@ and open the template in the editor.
                     <Input type="Submit" value="Submit and continue">&nbsp;&nbsp;
                 </p>
             </form>    
-
         </div>
+
+        <div style="position:absolute; top: 1%; left: 93%" ><h1><span id ='clock'></span></h1></div>
+
         <script src="JS/common.js">
         </script>
         <script>
+            checkForced();
+            var seconds = 0;
             var content = getContent();
             var t = "";
             for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
                 t += "<div style=\"width:49%;float:left\">";
                 t += "<h3>" + content[i].title + ":</h3>";
+                seconds += content[i].seconds;
                 for (var j = 0; j < NUM_QUESTIONS; j++) {
                     t += "<p><b>" + content[i].questions[j].question + "</b><br>";
                     for (var k = 0; k < NUM_ANSWERS; k++) {
@@ -80,6 +85,7 @@ and open the template in the editor.
                 t += "</div>";
             }
             document.getElementById("content").innerHTML = t;
+            createClock(seconds, null, "test");
         </script>
     </body>
 </html>

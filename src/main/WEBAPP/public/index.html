@@ -15,8 +15,14 @@
             and we ask very little personal information from you (such as your age and gender). The more you can tell us, the more meaning our
             research will have.<br> 
             <br>
+            For the actual exercise, you will memorize answers to a total of two topics, in two sections of two. The experience will vary from
+            person to person, that is by design. There is a time limit, don't stress out over it, just do your best. 
+            <br>
             In our survey, going back doesn't really work. We do little to prevent it, but just keep going forward. If you make a mistake,
             don't worry about it, we have all done it. <br>
+            <br>
+            Similarly, please take this survey only once. If a family member or friend wants to take the test on you computer, please
+            open a new browser window. 
             <br>
             Lastly, we have a big favor to ask: It would be easy to cheat on this little task and test. Please don't. Our object is too establish
             whether something we present to you makes a difference, and if you cheat, we won't really learn anything. Thank you!<br>
@@ -25,8 +31,13 @@
             <br>
         </div>
         <p style="text-align: center">
-            <Button onclick="location.assign('stage_info')">Start survey</Button>
-            <Button onclick="window.open('admin_login.html', '_blank')">Admin login</Button>
+            <Button onclick="this.disabled = true,window.open('stage_info', '_blank')">Start survey</Button>
+            <Button onclick="location.assign('admin_login.html')">Admin login</Button>
         </p>
+        <script src="JS/common.js">
+        </script>
+        <script>
+            checkForced();
+        </script>
     </body>
 </html>

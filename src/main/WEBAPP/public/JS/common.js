@@ -9,13 +9,62 @@ function getContent() {
     if (xhr.status >= 200 && xhr.status < 300) {
         content = JSON.parse(xhr.response);
         console.log(content);
-        for (var i=0; i<4; i++) {
-            console.log(content[i]);
-        }
+//        for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
+//            console.log(content[i]);
+//        }
         return content;
     } else {
         console.log("dynamic content request failed:");
         console.log(xhr.statusText);
+    }
+}
+
+var clock = 0;
+var clockurl = "";
+var clockform = "";
+function updateClock() {
+    if (clock >= 0) {
+        var s = Math.floor(clock % 60);
+        s = ("00" + s).substr(-2);
+        var m = "" + Math.floor(clock / 60);
+        var text = m + ":" + s;
+        document.getElementById("clock").innerText = text;
+        clock -= 1;
+    } else {
+        if (clockurl !== null) {
+            location.assign(clockurl);
+        } else {
+            document.getElementById(clockform).submit();
+        }
+    }
+}
+
+function createClock(seconds, url, formid) {
+    clock = seconds;
+    clockurl = url;
+    clockform = formid;
+    updateClock();
+    setInterval(updateClock, 1000);
+}
+
+
+function checkForced() {
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "get_forcedsettings", false);
+    xhr.send();
+    if (xhr.status >= 200 && xhr.status < 300) {
+    } else {
+        console.log("check for forced assignment failed: ");
+        console.log(xhr.statusText);
+    }
+
+    var body = document.getElementsByTagName("BODY")[0];
+    if (xhr.response === "0") {
+        document.title = "Forced Control: " + document.title;
+        body.style.backgroundColor = "LightCyan";
+    } else if (xhr.response === "1") {
+        document.title = "Forced Treatment: " + document.title;
+        body.style.backgroundColor = "LightCyan";
     }
 }
 

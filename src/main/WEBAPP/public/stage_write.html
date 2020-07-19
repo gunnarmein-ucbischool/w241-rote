@@ -8,10 +8,10 @@
               integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
               crossorigin="anonymous">    </head>
     <body>
-        <form action="post_write" method="post">
+        <form action="post_write" method="post" id="write">
             <div style="margin-left:20px;margin-top: 20px">
                 <H2 style="text-align: center">Technique - Write it down!</h2>
-                <h4 style="text-align: center">Please look at the content again, and write down each item to be memorized in the boxes, in your own (brief words):  </h4>
+                <h4 style="text-align: center">Please look at the content again, and write down your <u>brief answers</u> in the boxes:  </h4>
                 <br>
                 <h2 id="t1"></h2>
                 <div style="width:45%; float:left">
@@ -22,14 +22,12 @@
                     <p>Question: <span id="q12"></span></p>
                     <p>Question: <span id="q13"></span></p>
                     <p>Question: <span id="q14"></span></p>
-                    <p>Question: <span id="q15"></span></p>
                 </div>
                 <div style="width:24%; float:left">
                     <p>Answer: <input Name="N11" type=text style="width:70%"></p>
                     <p>Answer: <input Name="N12" type=text style="width:70%"></p>
                     <p>Answer: <input Name="N13" type=text style="width:70%"></p>
                     <p>Answer: <input Name="N14" type=text style="width:70%"></p>
-                    <p>Answer: <input Name="N15" type=text style="width:70%"></p>
                 </div>
                 <br>
                 <br>
@@ -53,14 +51,12 @@
                     <p>Question: <span id="q22"></span></p>
                     <p>Question: <span id="q23"></span></p>
                     <p>Question: <span id="q24"></span></p>
-                    <p>Question: <span id="q25"></span></p>
                 </div>
                 <div style="width:24%; float:left">
                     <p>Answer: <input Name="N21" type=text style="width:70%"></p>
                     <p>Answer: <input Name="N22" type=text style="width:70%"></p>
                     <p>Answer: <input Name="N23" type=text style="width:70%"></p>
                     <p>Answer: <input Name="N24" type=text style="width:70%"></p>
-                    <p>Answer: <input Name="N25" type=text style="width:70%"></p>
                 </div>
                 <br>
                 <br>
@@ -85,18 +81,25 @@
                 </p>
             </div>
         </form>
+
+        <div style="position:absolute; top: 1%; left: 93%" ><h1><span id ='clock'></span></h1></div>
+
         <script src="JS/common.js">
         </script>
         <script>
-            content = getContent();
+            checkForced();
+            var seconds = 0;
+            var content = getContent();
             var t = "";
             for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
                 document.getElementById("t" + (i + 1)).innerHTML = content[i].title;
                 document.getElementById("c" + (i + 1)).value = content[i].passage;
+                seconds += content[i].seconds;
                 for (var j = 0; j < NUM_QUESTIONS; j++) {
                     document.getElementById("q" + (i + 1) + (j + 1)).innerHTML = content[i].questions[j];
                 }
             }
+            createClock(seconds, null, "test");
         </script>
     </body>
 </html>

@@ -21,7 +21,6 @@
                 <p>Question: <span id="q12"></span></p>
                 <p>Question: <span id="q13"></span></p>
                 <p>Question: <span id="q14"></span></p>
-                <p>Question: <span id="q15"></span></p>
             </div>
             <br>
             <br>
@@ -45,7 +44,6 @@
                 <p>Question: <span id="q22"></span></p>
                 <p>Question: <span id="q23"></span></p>
                 <p>Question: <span id="q24"></span></p>
-                <p>Question: <span id="q25"></span></p>
             </div>
             <br>
             <br>
@@ -69,21 +67,26 @@
                 <Button onclick="location.assign('continue_content')">Continue</Button>
             </p>
         </div>
-        
-        <div style="position:absolute; top: 10px; left: 10px" id ='clock'><h1>2:00</h1></div>
+
+        <div style="position:absolute; top: 1%; left: 93%" ><h1><span id ='clock'></span></h1></div>
 
         <script src="JS/common.js">
         </script>
         <script>
-            content = getContent();
+            checkForced();
+            var seconds = 0;
+            var content = getContent();
             var t = "";
             for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
                 document.getElementById("t" + (i + 1)).innerHTML = content[i].title;
                 document.getElementById("c" + (i + 1)).value = content[i].passage;
+                seconds += content[i].seconds;
+
                 for (var j = 0; j < NUM_QUESTIONS; j++) {
                     document.getElementById("q" + (i + 1) + (j + 1)).innerHTML = content[i].questions[j];
                 }
             }
+            createClock(seconds, "continue_content");
         </script>
     </body>
 </html>
