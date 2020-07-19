@@ -124,14 +124,20 @@ public class RoteSession {
         RoteSession rs = getSession(req);
         switch (rs.stage) {
             case CONTENT1:
+                System.out.println("delivering client content item "+rs.stage);
                 return rs.content1.stream().map(ci -> new ClientContentItem(ci)).collect(Collectors.toList());
             case TEST1:
+                System.out.println("delivering client test item "+rs.stage);
                 return rs.content1.stream().map(ci -> new ClientTestItem(ci)).collect(Collectors.toList());
+                
             case CONTENT2:
+            case CONTENT2_READAGAIN:
             case CONTENT2_SPEAK:
             case CONTENT2_WRITE:
+                System.out.println("delivering client content item "+rs.stage);
                 return rs.content2.stream().map(ci -> new ClientContentItem(ci)).collect(Collectors.toList());
             case TEST2:
+                System.out.println("delivering client test item "+rs.stage);
                 return rs.content2.stream().map(ci -> new ClientTestItem(ci)).collect(Collectors.toList());
         }
         System.out.println("getcontent: Unexpected stage, was: "+rs.stage);

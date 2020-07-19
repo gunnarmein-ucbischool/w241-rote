@@ -70,7 +70,7 @@
                 <Button onclick="location.assign('continue_content')">Continue</Button>
             </p>
         </div>
-        <div style="position:absolute; top: 10px; left: 10px" id ='clock'><h1>2:00</h1></div>
+        <div style="position:absolute; top: 10px; left: 10px" id ='clock'><h1>0:00</h1></div>
         <script src="JS/common.js">
         </script>
         <script>
@@ -79,16 +79,15 @@
             for (var i = 0; i < NUM_ITEMS_PER_PAGE; i++) {
                 document.getElementById("t" + (i + 1)).innerHTML = content[i].title;
                 document.getElementById("c" + (i + 1)).value = content[i].passage;
-                seconds = Math.max(seconds, content[i].seconds);
+                seconds += content[i].seconds;
                 for (var j = 0; j < NUM_QUESTIONS; j++) {
                     document.getElementById("q" + (i + 1) + (j + 1)).innerHTML = content[i].questions[j];
                 }
             }
-            var t = 120;
             function updateClock() {
-                t -= 1;
-                if (t >= 0) {
-                    var s = "" + Math.floor(t / 60) + ":" + Math.floor(t % 60);
+                seconds -= 1;
+                if (seconds >= 0) {
+                    var s = "" + Math.floor(seconds / 60) + ":" + Math.floor(seconds % 60);
                     document.getElementById("clock").innerHTML = "<h1>"+s+"</h1>";
                 } else {
                     location.assign('continue_content');
