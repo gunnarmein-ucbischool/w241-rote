@@ -29,7 +29,7 @@ public class Stages {
         CONTENT2_WRITE,
         DISTRACTION2,
         TEST2,
-        RESULTS,
+        FEEDBACK,
         FINISHED;
     }
 
@@ -136,9 +136,9 @@ public class Stages {
                 + id2 + "," + knowledge2 + ","
                 + id3 + "," + knowledge3 + ","
                 + id4 + "," + knowledge4;
-        
+
         Main.log(req, cov);
-        Main.logCov(rs + "," + System.currentTimeMillis() + "," + cov);
+        Main.logCov(rs + "," + cov);
 
         res.redirect("stage_content");
         return "ok";
@@ -231,8 +231,9 @@ public class Stages {
         Main.log(req, "Written answers: [" + n11 + "] [" + n12 + "] [" + n13 + "] [" + n14 + "]"
                 + "[" + n21 + "] [" + n22 + "] [" + n23 + "] [" + n24 + "]");
 
-        Main.logAnswers(rs + "," + System.currentTimeMillis() + "," + content.get(0).id + "," + n11 + ", " + n12 + ", " + n13 + ", " + n14 + ","
-                + content.get(0).id + n21 + "," + n22 + "," + n23 + "," + n24);
+        Main.logAnswers(rs + "," + System.currentTimeMillis() + ","
+                + content.get(0).id + "," + n11 + ", " + n12 + ", " + n13 + ", " + n14 + ","
+                + content.get(1).id + "," + n21 + "," + n22 + "," + n23 + "," + n24);
 
         res.redirect("stage_distraction");
         return "";
@@ -298,9 +299,34 @@ public class Stages {
         if (rs.stage == Stage.TEST1) {
             res.redirect("stage_content");
         } else {
-            res.redirect("stage_finished");
+            res.redirect("stage_feedback");
         }
         return "ok";
+    }
+
+    public static String feedback(Request req, Response res) {
+        RoteSession rs = RoteSession.getSession(req);
+        rs.setStage(Stage.FEEDBACK);
+        res.redirect("stage_feedback.html");
+        return "";
+    }
+
+    public static String postFeedback(Request req, Response res) {
+        RoteSession rs = RoteSession.getSession(req);
+
+        String text = req.queryParamOrDefault("text", "NA");
+
+        if (!text.equals("NA") && text.length()>0) {
+            if (text.length() > 500) {
+                text = text.substring(0, 500);
+            }
+            Main.log(req, "Feedback: "+text);
+        } else {
+            Main.log(req, "Feedback: NA");
+        }
+
+        res.redirect("stage_finished");
+        return "";
     }
 
     public static String finished(Request req, Response res) {

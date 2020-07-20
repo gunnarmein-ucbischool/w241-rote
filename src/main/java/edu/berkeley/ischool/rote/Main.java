@@ -102,6 +102,9 @@ public class Main implements SparkApplication {
         get("stage_write", (req, res) -> Stages.write(req, res));
         post("post_write", (req, res) -> Stages.postWrite(req, res));
 
+        get("stage_feedback", (req, res) -> Stages.feedback(req, res));
+        post("post_feedback", (req, res) -> Stages.postFeedback(req, res));
+
         get("stage_finished", (req, res) -> Stages.finished(req, res));
 
         // done
@@ -135,13 +138,13 @@ public class Main implements SparkApplication {
             File f = new File(covFileName);
             if (!f.exists()) {
                 f.createNewFile();
-                logToFile(covFileName, "session_id,session_start_time,cluster,treat,cov_time,"
-                        +"age,gender,"
-                        +"practice,"
-                        +"item_id1,knowledge1,"
-                        +"item_id2,knowledge2,"
-                        +"item_id3,knowledge3,"
-                        +"item_id4,knowledge4\n"
+                logToFile(covFileName, "session_id,session_start_time,cluster,treat,cov_submit_time,"
+                        + "age,gender,"
+                        + "practice,reading,"
+                        + "item_id1,knowledge1,"
+                        + "item_id2,knowledge2,"
+                        + "item_id3,knowledge3,"
+                        + "item_id4,knowledge4\n"
                 );
             }
         } catch (Exception e) {
@@ -154,7 +157,7 @@ public class Main implements SparkApplication {
             File f = new File(ansFileName);
             if (!f.exists()) {
                 f.createNewFile();
-                logToFile(ansFileName, "session_id,session_start_time,cluster,treat,write_time,"
+                logToFile(ansFileName, "session_id,session_start_time,cluster,treat,write_submit_time,"
                         + "item_id1,a11,a12,a13,a14,"
                         + "item_id2,a21,a22,a23,a24\n");
             }
@@ -168,7 +171,7 @@ public class Main implements SparkApplication {
             File f = new File(testFileName);
             if (!f.exists()) {
                 f.createNewFile();
-                logToFile(testFileName, "session_id,session_start_time,cluster,treat,test,test_start_time,"
+                logToFile(testFileName, "session_id,session_start_time,cluster,treat,test,test_submit_time,"
                         + "item_id1,a11,c11,a12,c12,a13,c13,a14,c14,"
                         + "item_id2,a21,c21,a22,c22,a23,c23,a24,c24,"
                         + "blank_column\n");
