@@ -67,7 +67,7 @@ public class Content {
             this.correctAnswer = "ABCDE".indexOf(answer);
 
             if (this.correctAnswer == -1) {
-                System.out.println("  ERROR: Correct answer not found");
+                Main.log("  ERROR: Correct answer not found");
             }
         }
     }
@@ -86,13 +86,12 @@ public class Content {
             int id = 1;
             while ((line = reader.readNext()) != null) {
                 if (line.length != NUM_COLUMNS) {
-                    System.err.println("ERROR: Incorrect number of columns in CSV content1.csv: " + line.length);
+                    Main.log("ERROR: Incorrect number of columns in CSV content1.csv: " + line.length);
                 }
                 // Passage,Question number,Question,A,B,C,D,E,IDK,Answer
                 String title = line[0];
                 String seconds = line[1];
                 String passage = line[2];
-                System.out.println("Content title: " + title);
 
                 ArrayList<Question> qs = new ArrayList<>();
                 for (int i = 0; i < NUM_QUESTIONS; i++) {
@@ -107,8 +106,8 @@ public class Content {
 
                     Question q = new Question(question, A, B, C, D, E, answer);
                     qs.add(q);
-                    
-                    if (i == NUM_QUESTIONS-1) {
+
+                    if (i == NUM_QUESTIONS - 1) {
                         break;
                     }
                     line = reader.readNext();
@@ -116,16 +115,17 @@ public class Content {
 
                 Item i = new Item(id, title, passage, seconds, qs);
                 Content.list.add(i);
+                Main.log("Content added: id: "+id+", title: " + title);
                 lastPassage = passage;
                 lastTitle = title;
                 id++;
             }
         } catch (CsvValidationException | IOException e) {
-            System.err.println("ERROR: Reading content files: " + e);
-            System.err.println("Content not found at " + file);
+            Main.log("ERROR: Reading content files: " + e);
+            Main.log("Content not found at " + file);
             return;
         }
-        System.out.println("Successfully read content csv " + file);
+        Main.log("Successfully read content csv " + file);
     }
 
     public static List<Item> getRandomItems() {

@@ -132,6 +132,11 @@ public class Main implements SparkApplication {
     public static void log(RoteSession rs, String s) {
         logToFile(logFileName, rs.getID() + ": " + s + "\n");
     }
+    public static void log(String s) {
+        logToFile(logFileName, "Log: " + s + "\n");
+    }
+
+ 
 
     public static void logCov(String s) {
         try {
