@@ -84,37 +84,3 @@ function checkForced() {
     }
 }
 
-function checkStage(stage) {
-    let xhr = new XMLHttpRequest();
-    xhr.open("GET", "current_stage?stage=" + stage, false);
-    xhr.send();
-    if (xhr.status >= 200 && xhr.status < 300) {
-        if (xhr.response !== "ok") {
-            location.assign(xhr.response);
-        }
-    } else {
-        console.log("check for current stage failed: ");
-        console.log(xhr.statusText);
-    }
-
-}
-
-
-function justDeleteContent() {
-    document.getElementById("content").innerHTML = "<br><h4>Content secured</h4><br>";
-}
-
-function deleteContent(button, url, formid) {
-    if (url !== null) {
-        justDeleteContent();
-        button.innerText = "Continue";
-        button.onclick = function () {
-            location.assign(url);
-        };
-    }
-}
-
-function deleteContentOnUnload() {
-    var body = document.getElementsByTagName("BODY")[0];
-    body.onbeforeunload = deleteContent;
-}
