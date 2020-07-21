@@ -13,6 +13,7 @@
             <!--<h2 style="text-align: center">Exercise!</h2>-->
             <h4 style="text-align: center">Pay close attention! What happened to the chicken? <br>
                 You will be moved to the next phase in about a minute.</h4>
+            <p style="text-align: center">If the video does not start automatically, please press play.</p>
 
             <iframe style="width:1800px; height:900px"  
                     src="https://www.youtube.com/embed/nGeKSiCQkPw?controls=0&autoplay=1" 
@@ -32,7 +33,7 @@
         <script>
             checkForced();
             var seconds = 67; // good cut
-            seconds = 5; // debug
+            //seconds = 5; // debug
             setTimeout(function () {
                 location.assign("stage_test");
             }, (seconds) * 1000);

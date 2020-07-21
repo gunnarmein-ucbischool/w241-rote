@@ -16,6 +16,7 @@
             <h4 style="text-align: center">Pay close attention! Before the chorus, how many animals does the song mention?<br>
                 You will be moved to the next phase in about a minute.
             </h4>
+            <p style="text-align: center">If the video does not start automatically, please press play.</p>
 
             <iframe style="width:1800px; height:900px" 
                     src="https://www.youtube.com/embed/jofNR_WkoCE?&autoplay=1" 
@@ -30,7 +31,7 @@
             checkForced();
             //var seconds = (3*60+45); // for full video
             var seconds = 48; // good cut
-            seconds = 5; // debug
+            //seconds = 5; // debug
             setTimeout(function () {
                 location.assign("stage_test");
             }, (seconds) * 1000);
