@@ -12,16 +12,21 @@ library(dplyr)
 library(anytime)
 library(lubridate)
 library(tidyr)
+library(ggplot2)
 options(scipen=999)
 
 ```
 
 Preprocessing the data
 
-```{r cars}
+```{r data preprocessing}
 #import files
-rote_cov <- read.csv(file="/Users/jeff/Documents/MIDS/W241/logs/rote_cov.csv", sep=',') #covariates
-rote_test <- read.csv(file="/Users/jeff/Documents/MIDS/W241/logs/rote_test.csv", sep=',') #test file
+rote_cov_original <- read.csv(file="/Users/jeff/Documents/MIDS/W241/logs/rote_cov.csv", sep=',') #covariates
+rote_test_original <- read.csv(file="/Users/jeff/Documents/MIDS/W241/logs/rote_test.csv", sep=',') #test file
+
+#create copies
+rote_cov <- rote_cov_original
+rote_test <- rote_test_original
 
 #convert unix epoch time to datetime
 #cov
@@ -33,23 +38,45 @@ rote_test$session_start_time <- as.POSIXct(rote_test$session_start_time/1000, or
 rote_test$test_submit_time <- as.POSIXct(rote_test$test_submit_time/1000, origin="1970-01-01")
 rote_test$test_time <- rote_test$test_submit_time - rote_test$session_start_time
 
-#show number of rows with na
-rote_test_cleaned <- rote_test %>% drop_na("a11", "a12", "a13", "a14", "a21", "a22", "a23","a24")
-rote_test_cleaned
+###remove rows with any NAs in the answers(indicates they did not complete the test)
+rote_test <- rote_test %>% drop_na("a11", "a12", "a13", "a14", "a21", "a22", "a23","a24")
 
+#on test file, establish if testee answer matches actual answer. if it matches, set var to 1, else 0. 
+#notation will be o11, o12, etc (o is for outcome)
+rote_test$o11 <- ifelse(rote_test$a11 == rote_test$c11, 1, 0)
+rote_test$o12 <- ifelse(rote_test$a12 == rote_test$c12, 1, 0)
+rote_test$o13 <- ifelse(rote_test$a13 == rote_test$c13, 1, 0)
+rote_test$o14 <- ifelse(rote_test$a14 == rote_test$c14, 1, 0)
+rote_test$o21 <- ifelse(rote_test$a21 == rote_test$c21, 1, 0)
+rote_test$o22 <- ifelse(rote_test$a22 == rote_test$c22, 1, 0)
+rote_test$o23 <- ifelse(rote_test$a23 == rote_test$c23, 1, 0)
+rote_test$o24 <- ifelse(rote_test$a24 == rote_test$c24, 1, 0)
+rote_test$score <- rote_test$o11 + rote_test$o12 + rote_test$o13 + rote_test$o14 + rote_test$o21 + rote_test$o22 + rote_test$o23 + rote_test$o24
 
-rote_cov
-rote_test
+#convert necessary columns to boolean
+rote_test$treat <- ifelse(rote_test$treat == "false", 0 , 1)
+rote_cov$treat <- ifelse(rote_cov$treat == "false", 0 , 1)
 
+#merge 2 datasets
+dataset <- merge(rote_test, rote_cov, by="session_id")
 
+#set date filter based on start time in test file
+dataset <- dataset %>% 
+  filter(session_start_time.x > as.POSIXct("2020-07-24 20:00:00", tz="UTC"))
+
+dataset
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+## some EDA
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+
+```{r EDA}
+#number of rows in the data
+
+print(paste("After cleaning, the number of rows in our dataset is:", toString(nrow(dataset))))
+print(paste("After cleaning, the number of observations in treatment is:", toString(sum(dataset$treat.x))))
+print(paste("After cleaning, the number of observations in control is:", toString(nrow(dataset) - sum(dataset$treat.x))))
+
+plot(dataset$age)
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
