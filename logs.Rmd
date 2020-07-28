@@ -1,0 +1,55 @@
+---
+title: "Final Project"
+author: "Tina Huang, Gunnar Mein, Jeff Li"
+date: "7/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#import libraries
+library(dplyr)
+library(anytime)
+library(lubridate)
+library(tidyr)
+options(scipen=999)
+
+```
+
+Preprocessing the data
+
+```{r cars}
+#import files
+rote_cov <- read.csv(file="/Users/jeff/Documents/MIDS/W241/logs/rote_cov.csv", sep=',') #covariates
+rote_test <- read.csv(file="/Users/jeff/Documents/MIDS/W241/logs/rote_test.csv", sep=',') #test file
+
+#convert unix epoch time to datetime
+#cov
+rote_cov$session_start_time <- as.POSIXct(rote_cov$session_start_time/1000, origin="1970-01-01")
+rote_cov$cov_submit_time <- as.POSIXct(rote_cov$cov_submit_time/1000, origin="1970-01-01")
+
+#test
+rote_test$session_start_time <- as.POSIXct(rote_test$session_start_time/1000, origin="1970-01-01")
+rote_test$test_submit_time <- as.POSIXct(rote_test$test_submit_time/1000, origin="1970-01-01")
+rote_test$test_time <- rote_test$test_submit_time - rote_test$session_start_time
+
+#show number of rows with na
+rote_test_cleaned <- rote_test %>% drop_na("a11", "a12", "a13", "a14", "a21", "a22", "a23","a24")
+rote_test_cleaned
+
+
+rote_cov
+rote_test
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
