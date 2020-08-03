@@ -133,8 +133,8 @@ public class Content {
         synchronized (Content.class) {
             results = (ArrayList<Item>) list.clone();
         }
-        Collections.shuffle(list);
-        return list.subList(0, NUM_ITEMS);
+        Collections.shuffle(results);
+        return results.subList(0, NUM_ITEMS);
     }
 
 }

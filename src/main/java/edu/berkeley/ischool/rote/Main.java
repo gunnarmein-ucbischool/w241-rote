@@ -25,7 +25,7 @@ public class Main implements SparkApplication {
     public static String ansFileName;
     public static String testFileName;
     public static String logs;
-    public static final String MAIN_PW = "powerlifter";
+    public static final String MAIN_PW = "*******";
 
     public static int forceAssignment = -1;
 
