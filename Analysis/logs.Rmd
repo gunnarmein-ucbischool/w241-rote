@@ -118,6 +118,7 @@ ggplot(dataset_treat, aes(x=score_post)) +
   geom_histogram() +
   ggtitle("Distribution of Scores for Treatment Group")
 
+
 ggplot(dataset, aes(x=gender)) + 
   geom_bar() +
   ggtitle("Distribution of Gender")
@@ -138,3 +139,45 @@ stargazer(regression1, header = F, type = "text", omit.table.layout= "n",
           title="Regression Results")
 
 ```
+
+
+Does it make sense to look at just students?
+
+```{r}
+ggplot(dataset, aes(x=age, y=score_post, color=treat.x))+
+  geom_point()+
+  ggtitle("Scores over age")
+
+ggplot(dataset, aes(x=age, y=score_post-score_pre, color=treat.x))+
+  geom_point()+
+  ggtitle("Differential scores over age")
+
+dataset_students = dataset %>% filter(age<20)
+
+ggplot(dataset_students, aes(x=age, y=score_post-score_pre, color=treat.x))+
+  geom_point()+
+  ggtitle("Student differential scores over age")
+
+
+regression2 <- lm(score_post ~ treat.x + score_pre + age + knowledge_cov_post + test_time,data=dataset_students)
+summary(regression2)
+
+```
+
+Answer: No, not really, there are too few of them.
+
+randomization checks:
+
+```{r}
+check_treat = glm(treat.x ~ gender+age+knowledge_cov_post+score_pre+test_time, family=binomial(link="logit"), data=dataset)
+summary(check_treat)
+```
+```{r}
+dataset %>%
+  ggplot(aes(x = score_pre)) +
+  geom_histogram(aes(color = as.factor(treat.x), fill = as.factor(treat.x)), 
+                position = "dodge", bins = 30, alpha = 0.4) +
+  scale_color_manual(values = c("#00AFBB", "#E7B800")) +
+  scale_fill_manual(values = c("#00AFBB", "#E7B800"))
+```
+
