@@ -1,0 +1,140 @@
+---
+title: "Final Project"
+author: "Tina Huang, Gunnar Mein, Jeff Li"
+date: "7/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#import libraries
+library(dplyr)
+library(anytime)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+library(stargazer)
+options(scipen=999)
+
+```
+
+Preprocessing the data
+
+```{r data preprocessing}
+#import files
+rote_cov_original <- read.csv(file="rote_cov.csv", sep=',') #covariates
+rote_test_original <- read.csv(file="rote_test.csv", sep=',') #test file
+
+#create copies
+rote_cov <- rote_cov_original
+rote_test <- rote_test_original
+
+#convert unix epoch time to datetime
+#cov
+rote_cov$session_start_time <- as.POSIXct(rote_cov$session_start_time/1000, origin="1970-01-01")
+rote_cov$cov_submit_time <- as.POSIXct(rote_cov$cov_submit_time/1000, origin="1970-01-01")
+
+#test
+rote_test$session_start_time <- as.POSIXct(rote_test$session_start_time/1000, origin="1970-01-01")
+rote_test$test_submit_time <- as.POSIXct(rote_test$test_submit_time/1000, origin="1970-01-01")
+rote_test$test_time <- rote_test$test_submit_time - rote_test$session_start_time
+
+###remove rows with any NAs in the answers(indicates they did not complete the test)
+rote_test <- rote_test %>% drop_na("a11", "a12", "a13", "a14", "a21", "a22", "a23","a24")
+
+###remove rows with missing covariates
+#covert age, remove outliers for age
+rote_cov$age <- ifelse(as.numeric(as.character(rote_cov$age)) >100, NA, as.numeric(as.character(rote_cov$age)))
+rote_cov <- rote_cov %>% drop_na("age")
+
+#on test file, establish if testee answer matches actual answer. if it matches, set var to 1, else 0. 
+#notation will be o11, o12, etc (o is for outcome)
+rote_test$o11 <- ifelse(rote_test$a11 == rote_test$c11, 1, 0)
+rote_test$o12 <- ifelse(rote_test$a12 == rote_test$c12, 1, 0)
+rote_test$o13 <- ifelse(rote_test$a13 == rote_test$c13, 1, 0)
+rote_test$o14 <- ifelse(rote_test$a14 == rote_test$c14, 1, 0)
+rote_test$o21 <- ifelse(rote_test$a21 == rote_test$c21, 1, 0)
+rote_test$o22 <- ifelse(rote_test$a22 == rote_test$c22, 1, 0)
+rote_test$o23 <- ifelse(rote_test$a23 == rote_test$c23, 1, 0)
+rote_test$o24 <- ifelse(rote_test$a24 == rote_test$c24, 1, 0)
+rote_test$score_pre <- rote_test$o11 + rote_test$o12 + rote_test$o13 + rote_test$o14 
+rote_test$score_post <- rote_test$o21 + rote_test$o22 + rote_test$o23 + rote_test$o24
+
+
+#on covariates file, sum knowledge scores together
+rote_cov$knowledge_cov_pre <- rote_cov$knowledge1 + rote_cov$knowledge2 
+rote_cov$knowledge_cov_post <- rote_cov$knowledge3 + rote_cov$knowledge4
+
+#convert necessary columns to boolean
+rote_test$treat <- ifelse(rote_test$treat == "false", 0 , 1)
+rote_cov$treat <- ifelse(rote_cov$treat == "false", 0 , 1)
+
+
+#get distinct ids
+rote_test <- rote_test[!duplicated(rote_test$session_id),]
+rote_cov <- rote_cov[!duplicated(rote_cov$session_id),]
+
+#inner join 2 datasets
+#dataset <- merge(rote_test, rote_cov, by="session_id")
+
+dataset <- inner_join(rote_test, rote_cov, by="session_id" )
+
+#set date filter based on start time in test file
+dataset <- dataset %>% 
+  filter(session_start_time.x > as.POSIXct("2020-07-24 20:00:00", tz="UTC")) 
+names(dataset)
+dataset <- dataset %>% filter %>% select("session_id", "score_pre", "score_post", "cluster.x", "gender", "age", "knowledge_cov_pre", "knowledge_cov_post", "test_time", "treat.x")
+
+
+#nrow(dataset)
+
+#nrow(rote_test)
+#nrow(rote_cov)
+```
+
+
+## EDA, Regression modeling
+
+
+```{r EDA}
+
+#number of rows in the data
+
+print(paste("After cleaning, the number of rows in our dataset is:", toString(nrow(dataset))))
+print(paste("After cleaning, the number of observations in treatment is:", toString(sum(dataset$treat.x))))
+print(paste("After cleaning, the number of observations in control is:", toString(nrow(dataset) - sum(dataset$treat.x))))
+
+ggplot(dataset, aes(x=age)) + geom_histogram()
+
+dataset_control <- dataset %>% filter(treat.x == 0)
+dataset_treat <- dataset %>% filter(treat.x == 1)
+
+
+ggplot(dataset_control, aes(x=score_post)) + 
+  geom_histogram() +
+  ggtitle("Distribution of Scores for Control Group")
+
+ggplot(dataset_treat, aes(x=score_post)) + 
+  geom_histogram() +
+  ggtitle("Distribution of Scores for Treatment Group")
+
+ggplot(dataset, aes(x=gender)) + 
+  geom_bar() +
+  ggtitle("Distribution of Gender")
+
+ggplot(dataset, aes(x=test_time)) + 
+  geom_histogram() +
+  ggtitle("Distribution of Test Time")
+
+names(dataset)
+
+regression1 <- lm(score_post ~ treat.x + score_pre + age + knowledge_cov_post + test_time,data=dataset)
+
+summary(regression1)
+
+stargazer(dataset, header= F, title = "Summary Table of Data", type="text") #flip type between text and latex
+
+stargazer(regression1, header = F, type = "text", omit.table.layout= "n", 
+          title="Regression Results")
+
+```
