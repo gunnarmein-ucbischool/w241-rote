@@ -1,0 +1,199 @@
+---
+title: "GM"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+```
+
+```{r}
+df = read.csv("rote_test.csv")
+head(df)
+df_cov = read.csv(("rote_cov.csv"))
+head(df_cov)
+```
+```{r}
+df_b = df[df$test == 'baseline',]
+df_e = df[df$test == 'experiment',]
+```
+```{r}
+sum(duplicated(df_cov$session_id))
+df_cov = df_cov[!duplicated(df_cov$session_id),]
+nrow(df_cov)
+
+sum(duplicated(df_b$session_id))
+df_b = df_b[!duplicated(df_b$session_id),]
+nrow(df_b)
+sum(duplicated(df_e$session_id))
+df_e = df_e[!duplicated(df_e$session_id),]
+nrow(df_e)
+```
+```{r}
+df2 = left_join(df_b, df_e, by='session_id')
+nrow(df2)
+df3 = left_join(df_cov, df2, by='session_id')
+nrow(df3)
+df3a= inner_join(df_b, df_e, by="session_id")
+df_completed = inner_join(df_cov, df3a, by="session_id")
+nrow(df_completed)
+```
+
+```{r}
+df3$completed = as.factor(ifelse(!is.na(df3$a11.y), "completed", ifelse(!is.na(df3$a11.x), "baseline", ifelse(!is.na(df3$treat), "covariates", "started"))))
+summary(df3$completed)
+df3$treat = as.numeric(df3$treat)
+str(df3)
+df3$completed = factor(df3$completed, levels=c("started", "covariates", "baseline", "completed"))
+```
+
+
+```{r}
+log = read.csv("log2.txt")
+colnames(log) = c("session_id", "time")
+log = log[!duplicated(log$session_id),]
+nrow(log)
+```
+```{r}
+df_a = data.frame(id=1:4,stage=c("started", "covariates", "baseline", "complete"), n=c(218, 171, 123, 108))
+df_a
+```
+```{r}
+str(df3)
+n=218-171
+df_started = data.frame(session_id = as.factor(1:n), treat=3, completed=factor("started"))
+str(df_started)
+df4 = full_join(df3, df_started, by="session_id")
+str(df4)
+df4$treat = ifelse(is.na(df4$treat.x), df4$treat.y.y, df4$treat.x)
+df4$completed = as.factor(ifelse(is.na(df4$completed.x), df4$completed.y, df4$completed.x))
+```
+
+```{r}
+summary(df4$completed)
+str(df4)
+```
+
+```{r}
+is.na(df4$treat)
+```
+
+```{r}
+
+library(ggplot2)
+df4 %>% filter(completed != 4) %>% 
+  ggplot(aes(x=completed, fill=as.factor(treat)))+
+  geom_histogram(stat="count") +
+  theme_minimal() +
+  scale_x_discrete(labels=c("started", "covariates", "baseline", "complete")) +
+  scale_fill_brewer(palette="Dark2") +
+  scale_fill_manual(values=c("#003262", "#3B7EA1", "#FDB515", "#C4820E"),
+                    labels=c("Control", "Treatment", "Before assignment"))+
+  ylab("Participants dropping out") +
+  ggtitle("Attrition by stage")  +
+  theme(legend.title=element_blank())
+ 
+```
+```{r}
+library(ggplot2)
+df_a %>% ggplot(aes(x=stage, y=n, fill=stage))+
+  geom_bar(stat="identity") +
+  theme_minimal() +
+  scale_x_discrete(limits=c("started", "covariates", "baseline", "complete")) +
+  #scale_fill_brewer(palette="Dark2") +
+  scale_fill_manual(values=c("#003262", "#3B7EA1", "#FDB515", "#C4820E"))+
+  ylab("Participants") + 
+  ggtitle("Participation by stage") 
+
+```
+```{r}
+#str(df_cov)
+library(lmtest)
+df_cov$total_prior_knowledge = df_cov$knowledge1+df_cov$knowledge2+df_cov$knowledge3+df_cov$knowledge4
+model = glm(treat~as.numeric(age)+gender+practice+reading+total_prior_knowledge, data=df_cov, family=binomial(link="logit"))
+summary(model)
+```
+```{r}
+str(df_completed)
+model = glm(treat.x~as.numeric(age)+gender+practice+reading+total_prior_knowledge, data=df_completed, family=binomial(link="logit"))
+summary(model)
+```
+```{r}
+df_completed$score_b = 
+  (df_completed$a11.x == df_completed$c11.x)+
+  (df_completed$a12.x == df_completed$c12.x)+
+  (df_completed$a13.x == df_completed$c13.x)+
+  (df_completed$a14.x == df_completed$c14.x)+
+  (df_completed$a21.x == df_completed$c21.x)+
+  (df_completed$a22.x == df_completed$c22.x)+
+  (df_completed$a23.x == df_completed$c23.x)+
+  (df_completed$a24.x == df_completed$c24.x)
+df_completed$score_e = 
+  (df_completed$a11.y == df_completed$c11.y)+
+  (df_completed$a12.y == df_completed$c12.y)+
+  (df_completed$a13.y == df_completed$c13.y)+
+  (df_completed$a14.y == df_completed$c14.y)+
+  (df_completed$a21.y == df_completed$c21.y)+
+  (df_completed$a22.y == df_completed$c22.y)+
+  (df_completed$a23.y == df_completed$c23.y)+
+  (df_completed$a24.y == df_completed$c24.y)
+df_completed$score = df_completed$score_e - df_completed$score_b
+df_completed$age = as.numeric(df_completed$age)
+```
+```{r}
+df_completed %>% ggplot(aes(x=score, fill=treat))+
+  geom_bar(stat="count", position="dodge") +
+  theme_minimal() +
+  #scale_fill_brewer(palette="Dark2") +
+  scale_fill_manual(values=c("#003262", "#FDB515"),
+                    labels=c("Control", "Treatment"))+
+ ylab("Frequency") + 
+  ggtitle("Score difference between baseline and experiment") 
+
+```
+
+```{r}
+model = lm(score~treat+age+gender+reading+practice, data=df_completed)
+summary(model)
+sqrt(diag(vcovCL(model, cluster=df_completed$cluster)))
+```
+
+
+```{r}
+df_bc = inner_join(df_cov, df_b, by="session_id")
+nrow(df_bc)
+df_ec = inner_join(df_cov, df_e, by="session_id")
+nrow(df_ec)
+df_ec2 = df_ec %>% filter(session_id %in% df_bc$session_id)
+nrow(df_ec2)
+```
+```{r}
+df_did = rbind(df_bc, df_ec2)
+df_did$score = 
+  (df_did$a11 == df_did$c11) +
+  (df_did$a12 == df_did$c12) +
+  (df_did$a13 == df_did$c13) +
+  (df_did$a14 == df_did$c14) +
+  (df_did$a21 == df_did$c21) +
+  (df_did$a22 == df_did$c22) +
+  (df_did$a23 == df_did$c23) +
+  (df_did$a24 == df_did$c24)
+df_did$age = as.numeric(df_did$age)
+df_did = df_did %>% 
+  select("session_id", "treat.x", "cluster.x","test", 
+         "age", "gender", "practice", "reading",
+         "total_prior_knowledge", "score")
+colnames(df_did) = c("session_id", "treat", "cluster", "test",
+         "age", "gender", "practice", "reading",
+         "total_prior_knowledge", "score")
+str(df_did)
+```
+
+```{r}
+model3 = lm(score~treat:test+age+gender+practice+reading+total_prior_knowledge, data=df_did)
+summary(model3)
+```
+
