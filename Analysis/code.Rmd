@@ -1,0 +1,302 @@
+---
+title: "Code"
+output: html_document
+---
+
+
+```{r echo=FALSE, include=FALSE}
+load_data = function(){
+  # import files
+  rote_cov_original <- read.csv(file="rote_cov.csv", sep=',') #covariates
+  rote_test_original <- read.csv(file="rote_test.csv", sep=',') #test file
+  
+  # create copies
+  rote_cov <- rote_cov_original
+  rote_test <- rote_test_original
+  
+  # convert unix epoch time to datetime
+  # cov
+  rote_cov$session_start_time <- as.POSIXct(rote_cov$session_start_time/1000, origin="1970-01-01")
+  rote_cov$cov_submit_time <- as.POSIXct(rote_cov$cov_submit_time/1000, origin="1970-01-01")
+  
+  # test
+  rote_test$session_start_time <- as.POSIXct(rote_test$session_start_time/1000, origin="1970-01-01")
+  rote_test$test_submit_time <- as.POSIXct(rote_test$test_submit_time/1000, origin="1970-01-01")
+  rote_test$test_time <- rote_test$test_submit_time - rote_test$session_start_time
+  
+  # remove rows with any NAs in the answers(indicates they did not complete the test)
+  rote_test <- rote_test %>% drop_na("a11", "a12", "a13", "a14", "a21", "a22", "a23","a24")
+  
+  rote_test_baseline <- rote_test %>% filter(test == 'baseline')
+  rote_test_experiment <- rote_test %>% filter(test == 'experiment') %>% select('session_id','item_id1','a11','a12', 'a13', 'a14', 'a21', 'a22', 'a23','a24', 'item_id2', 'c11','c12', 'c13', 'c14', 'c21', 'c22', 'c23','c24')
+  
+  rote_test <- inner_join(rote_test_baseline, rote_test_experiment, by="session_id" )
+  
+  
+  # remove rows with missing covariates
+  # covert age, remove outliers for age
+  rote_cov$age <- ifelse(as.numeric(as.character(rote_cov$age)) >100, NA, as.numeric(as.character(rote_cov$age)))
+  rote_cov <- rote_cov %>% drop_na("age")
+  
+  #fix gender
+  rote_cov$gender <- ifelse(rote_cov$gender == 'other', NA, rote_cov$gender)
+  
+  
+  # on test file, establish if testee answer matches actual answer. 
+  # if it matches, set var to 1, else 0. 
+  # notation will be o11, o12, etc (o is for outcome)
+  # x = baseline
+  # y = treatment
+  rote_test$o11x <- ifelse(rote_test$a11.x == rote_test$c11.x, 1, 0)
+  rote_test$o12x <- ifelse(rote_test$a12.x == rote_test$c12.x, 1, 0)
+  rote_test$o13x <- ifelse(rote_test$a13.x == rote_test$c13.x, 1, 0)
+  rote_test$o14x <- ifelse(rote_test$a14.x == rote_test$c14.x, 1, 0)
+  rote_test$o21x <- ifelse(rote_test$a21.x == rote_test$c21.x, 1, 0)
+  rote_test$o22x <- ifelse(rote_test$a22.x == rote_test$c22.x, 1, 0)
+  rote_test$o23x <- ifelse(rote_test$a23.x == rote_test$c23.x, 1, 0)
+  rote_test$o24x <- ifelse(rote_test$a24.x == rote_test$c24.x, 1, 0)
+  
+  rote_test$o11y <- ifelse(rote_test$a11.y == rote_test$c11.y, 1, 0)
+  rote_test$o12y <- ifelse(rote_test$a12.y == rote_test$c12.y, 1, 0)
+  rote_test$o13y <- ifelse(rote_test$a13.y == rote_test$c13.y, 1, 0)
+  rote_test$o14y <- ifelse(rote_test$a14.y == rote_test$c14.y, 1, 0)
+  rote_test$o21y <- ifelse(rote_test$a21.y == rote_test$c21.y, 1, 0)
+  rote_test$o22y <- ifelse(rote_test$a22.y == rote_test$c22.y, 1, 0)
+  rote_test$o23y <- ifelse(rote_test$a23.y == rote_test$c23.y, 1, 0)
+  rote_test$o24y <- ifelse(rote_test$a24.y == rote_test$c24.y, 1, 0)
+  
+  rote_test$score_pre <- rote_test$o11x + rote_test$o12x + rote_test$o13x +
+    rote_test$o14x + rote_test$o21x + rote_test$o22x + rote_test$o23x + rote_test$o24x
+  rote_test$score_post <- rote_test$o11y + rote_test$o12y + rote_test$o13y + 
+    rote_test$o14y + rote_test$o21y + rote_test$o22y + rote_test$o23y + rote_test$o24y
+  
+  rote_test$score =  rote_test$score_post - rote_test$score_pre
+  
+  #on covariates file, sum knowledge scores together
+  rote_cov$knowledge_cov_pre <- rote_cov$knowledge1 + rote_cov$knowledge2 
+  rote_cov$knowledge_cov_post <- rote_cov$knowledge3 + rote_cov$knowledge4
+  rote_cov$prior_knowledge <- rote_cov$knowledge_cov_post + rote_cov$knowledge_cov_pre
+  
+  #convert necessary columns to boolean
+  rote_test$treat <- ifelse(rote_test$treat == "false", 0 , 1)
+  rote_cov$treat <- ifelse(rote_cov$treat == "false", 0 , 1)
+  
+  #get distinct ids
+  rote_test <- rote_test[!duplicated(rote_test$session_id),]
+  rote_cov <- rote_cov[!duplicated(rote_cov$session_id),]
+  
+  #inner join 2 datasets
+  #dataset <- merge(rote_test, rote_cov, by="session_id")
+  
+  dataset <- inner_join(rote_test, rote_cov, by="session_id" )
+  
+  #set date filter based on start time in test file
+  #dataset <- dataset %>% filter(session_start_time.x > as.POSIXct("2020-07-24 20:00:00", tz="UTC")) 
+  
+  #names(dataset)
+  
+  dataset$treat <- dataset$treat.x
+  dataset$cluster <- dataset$cluster.x
+  dataset$gender <- as.factor(dataset$gender)
+  dataset <- dataset %>% 
+    filter %>% 
+    select("session_id", "score", "cluster", "gender", "age", 
+           "prior_knowledge", "treat","reading", "practice")
+  
+}
+
+```
+
+```{r}
+attrition = function() {
+  # todo: df3 is the dataset before covariates are joined, need to see how to reconstruct that
+  df2 = left_join(df_b, df_e, by='session_id')
+  nrow(df2)
+  df3 = left_join(df_cov, df2, by='session_id')
+  nrow(df3)
+  df3a= inner_join(df_b, df_e, by="session_id")
+  df_completed = inner_join(df_cov, df3a, by="session_id")
+  nrow(df_completed)
+
+  df3$completed = as.factor(ifelse(!is.na(df3$a11.y), "completed", 
+                                   ifelse(!is.na(df3$a11.x), "baseline", 
+                                          ifelse(!is.na(df3$treat), 
+                                                 "covariates", "started"))))
+  summary(df3$completed)
+  df3$treat = as.numeric(df3$treat)
+  str(df3)
+  df3$completed = factor(df3$completed, levels=c("started", "covariates", "baseline", "completed"))
+  
+  str(df3)
+  n=218-171
+  df_started = data.frame(session_id = as.factor(1:n), treat=3, completed=factor("started"))
+  str(df_started)
+  df4 = full_join(df3, df_started, by="session_id")
+  str(df4)
+  df4$treat = ifelse(is.na(df4$treat.x), df4$treat.y.y, df4$treat.x)
+  df4$completed = as.factor(ifelse(is.na(df4$completed.x), df4$completed.y, df4$completed.x))
+}
+
+print_stats = function() {
+  print(paste("After cleaning, the number of rows in our dataset is:", toString(nrow(dataset))))
+  print(paste("After cleaning, the number of observations in treatment is:", toString(sum(dataset$treat))))
+  print(paste("After cleaning, the number of observations in control is:", toString(nrow(dataset) - sum(dataset$treat))))
+}
+
+
+calc_regressions = function() {
+  regression1 <- lm(score ~ treat + age + prior_knowledge + reading + gender + practice,data=dataset)
+  regression2 <- lm(score ~ treat ,data=dataset)
+  clustered_errors1 <- vcovCL_1c <- vcovCL(regression1, cluster = dataset[ , 'cluster'])
+  clustered_errors2 <- vcovCL_2c <- vcovCL(regression2, cluster = dataset[ , 'cluster'])
+}
+
+print_summary = function() {
+  stargazer(dataset, 
+            header= F,
+            title = "Summary Table of Data", 
+            type="latex") #flip type between text and latex
+}
+
+print_regressions = function() {
+  stargazer(regression1, regression2, 
+            header = F, 
+            type = "latex", 
+            omit.table.layout= "n", 
+            keep.stat = c("adj.rsq", "n", "f", "ser", "aic", "wald"),
+            se = list(sqrt(diag(clustered_errors1)),sqrt(diag(clustered_errors2))),
+            star.cutoffs = c(0.05, 0.01, 0.001),
+            title="Regression Results with Clustered Standard Errors")
+}
+
+
+```
+
+```{r}
+
+plot_rand_gender = function (){
+  dataset %>% ggplot(aes(x=gender, fill=treat))+
+    geom_bar(stat="count", position="stack") +
+    theme_minimal() +
+    #scale_fill_brewer(palette="Dark2") +
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    ylab("Count") + 
+    ggtitle("Randomization - gender") +
+    
+    theme(legend.title=element_blank())
+}
+
+plot_rand_age = function (){
+  dataset %>% ggplot(aes(x=age, fill=treat))+
+    geom_bar(stat="count", position="stack", binwidth=3) +
+    theme_minimal() +
+    #scale_fill_brewer(palette="Dark2") +
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    ylab("Count") + 
+    ggtitle("Randomization - age") +
+    
+    theme(legend.title=element_blank())
+}
+
+plot_rand_reading = function (){
+  dataset %>% ggplot(aes(x=reading, fill=treat))+
+    geom_bar(stat="count", position="stack", binwidth=1) +
+    theme_minimal() +
+    #scale_fill_brewer(palette="Dark2") +
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    ylab("Count") + 
+    ggtitle("Randomization - reading habits") +
+    
+    theme(legend.title=element_blank())
+}
+
+plot_rand_practice = function (){
+  dataset %>% ggplot(aes(x=practice, fill=treat))+
+    geom_bar(stat="count", position="stack", binwidth=1) +
+    theme_minimal() +
+    #scale_fill_brewer(palette="Dark2") +
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    ylab("Count") + 
+    ggtitle("Randomization - practice memorizing") +
+    
+    theme(legend.title=element_blank())
+}
+
+plot_scores = function() {
+  dataset %>% ggplot(aes(x=score, fill=as.factor(treat)))+
+    geom_bar(stat="count", position="dodge") +
+    theme_minimal() +
+    #scale_fill_brewer(palette="Dark2") +
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    ylab("Frequency") + 
+    ggtitle("Score difference between baseline and experiment") +
+    theme(legend.title=element_blank())
+}
+
+plot_gender = function() {
+  ggplot(dataset, aes(x=gender)) + 
+  geom_bar() +
+  ggtitle("Distribution of Gender")
+}
+
+plot_age = function() {
+dataset %>% ggplot(aes(x=age, fill=gender))+
+    geom_bar(stat="count", position="stack", binwidth=3) +
+    theme_minimal() +
+    #scale_fill_brewer(palette="Dark2") +
+    scale_fill_manual(values=c("#003262", "#FDB515", "#C4820E"),
+                      labels=c("Female", "Male", "Other"))+
+    ylab("Count") + 
+    ggtitle("Age distribution") +
+    theme(legend.title=element_blank())
+}
+
+plot_score_diffs = function () {
+  dataset %>% ggplot(aes(x=score, fill=treat))+
+    geom_density(stat="count", alpha=0.3)+
+    geom_histogram(stat="count", position="dodge") +
+    theme_minimal() +
+    #scale_fill_brewer(palette="Dark2") +
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    ylab("Frequency") + 
+    ggtitle("Score difference between baseline and experiment") +
+    theme(legend.title = element_blank())
+}
+
+plot_participation = function() {
+  df_a = data.frame(id=1:4,stage=c("started", "covariates", "baseline", "complete"),
+                    n=c(218, 171, 123, 108))
+  df_a %>% ggplot(aes(x=stage, y=n, fill=stage))+
+    geom_bar(stat="identity") +
+    theme_minimal() +
+    scale_x_discrete(limits=c("started", "covariates", "baseline", "complete")) +
+    #scale_fill_brewer(palette="Dark2") +
+    scale_fill_manual(values=c("#003262", "#3B7EA1", "#FDB515", "#C4820E"))+
+    ylab("Participants") + 
+    ggtitle("Participation by stage") 
+}
+
+plot_attrition = function () {
+  df4 %>% 
+    filter(completed != 4) %>% 
+    ggplot(aes(x=completed, fill=as.factor(treat)))+
+    geom_histogram(stat="count") +
+    theme_minimal() +
+    scale_x_discrete(labels=c("started", "covariates", "baseline", "complete")) +
+    scale_fill_brewer(palette="Dark2") +
+    scale_fill_manual(values=c("#003262", "#3B7EA1", "#FDB515", "#C4820E"),
+                      labels=c("Control", "Treatment", "Before assignment"))+
+    ylab("Participants dropping out") +
+    ggtitle("Attrition by stage")  +
+    theme(legend.title=element_blank())
+}
+
+```
+
+

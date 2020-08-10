@@ -1,0 +1,69 @@
+---
+title: "Rote Memorization Techniques"
+subtitle: "W241 Summer 2020 (Daniel Hedstrom Wed 6:30 pm) Final Project"
+author: "Tina Huang, Gunnar Mein, Jeff Li"
+date: "8/12/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+\centering
+
+\raggedright
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#import libraries
+library(dplyr)
+library(anytime)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+library(stargazer)
+library(sandwich)
+library(lmtest)
+options(scipen=999)
+```
+
+```{r echo=FALSE, child='code.Rmd'}
+```
+
+\pagebreak
+# Introduction
+
+\pagebreak
+# Experiment Design
+
+\pagebreak
+# Results
+
+## Loading and Preprocessing the Data
+
+```{r data_preprocessing}
+dataset = load_data()
+dataset_control <- dataset %>% filter(treat == 0)
+dataset_treat <- dataset %>% filter(treat == 1)
+```
+
+## EDA, Regression modeling
+
+```{r EDA, results='asis'}
+
+```
+
+## Randomization Checks
+
+## Effect Calculation
+
+\pagebreak
+# Appendix
+
+## Code
+
+```{r child='code.Rmd'}
+```
+
+
+
