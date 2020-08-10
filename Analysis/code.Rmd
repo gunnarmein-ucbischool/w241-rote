@@ -98,6 +98,7 @@ load_data = function(){
   dataset$treat <- dataset$treat.x
   dataset$cluster <- dataset$cluster.x
   dataset$gender <- as.factor(dataset$gender)
+
   dataset <- dataset %>% 
     filter %>% 
     select("session_id", "score", "cluster", "gender", "age", 
@@ -144,13 +145,6 @@ print_stats = function() {
 }
 
 
-calc_regressions = function() {
-  regression1 <- lm(score ~ treat + age + prior_knowledge + reading + gender + practice,data=dataset)
-  regression2 <- lm(score ~ treat ,data=dataset)
-  clustered_errors1 <- vcovCL_1c <- vcovCL(regression1, cluster = dataset[ , 'cluster'])
-  clustered_errors2 <- vcovCL_2c <- vcovCL(regression2, cluster = dataset[ , 'cluster'])
-}
-
 print_summary = function() {
   stargazer(dataset, 
             header= F,
@@ -158,7 +152,11 @@ print_summary = function() {
             type="latex") #flip type between text and latex
 }
 
-print_regressions = function() {
+result_regressions = function() {
+  regression1 <- lm(score ~ treat ,data=dataset)
+  regression2 <- lm(score ~ treat + age + prior_knowledge + reading + gender + practice,data=dataset)
+  clustered_errors1 <- vcovCL_1c <- vcovCL(regression1, cluster = dataset[ , 'cluster'])
+  clustered_errors2 <- vcovCL_2c <- vcovCL(regression2, cluster = dataset[ , 'cluster'])
   stargazer(regression1, regression2, 
             header = F, 
             type = "latex", 
@@ -168,15 +166,20 @@ print_regressions = function() {
             star.cutoffs = c(0.05, 0.01, 0.001),
             title="Regression Results with Clustered Standard Errors")
 }
+```
 
-
+```{r}
+cov_check_regression = function() {
+  glm(treat~age+gender+practice+reading+prior_knowledge, data=dataset, family=binomial(link="logit"))
+}
 ```
 
 ```{r}
 
 plot_rand_gender = function (){
-  dataset %>% ggplot(aes(x=gender, fill=treat))+
-    geom_bar(stat="count", position="stack") +
+  dataset %>% ggplot()+
+    geom_bar(aes(x=gender, fill=as.factor(treat)),
+             position="stack") +
     theme_minimal() +
     #scale_fill_brewer(palette="Dark2") +
     scale_fill_manual(values=c("#003262", "#FDB515"),
@@ -188,8 +191,10 @@ plot_rand_gender = function (){
 }
 
 plot_rand_age = function (){
-  dataset %>% ggplot(aes(x=age, fill=treat))+
-    geom_bar(stat="count", position="stack", binwidth=3) +
+  dataset %>% 
+    ggplot(aes(x=age, fill=as.factor(treat)))+
+    geom_histogram(position="stack", binwidth=3) +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette="Dark2") +
     scale_fill_manual(values=c("#003262", "#FDB515"),
@@ -201,8 +206,9 @@ plot_rand_age = function (){
 }
 
 plot_rand_reading = function (){
-  dataset %>% ggplot(aes(x=reading, fill=treat))+
-    geom_bar(stat="count", position="stack", binwidth=1) +
+  dataset %>% ggplot(aes(x=reading, fill=as.factor(treat)))+
+    geom_histogram(position="stack", binwidth=1) +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette="Dark2") +
     scale_fill_manual(values=c("#003262", "#FDB515"),
@@ -214,8 +220,9 @@ plot_rand_reading = function (){
 }
 
 plot_rand_practice = function (){
-  dataset %>% ggplot(aes(x=practice, fill=treat))+
-    geom_bar(stat="count", position="stack", binwidth=1) +
+  dataset %>% ggplot(aes(x=practice, fill=as.factor(treat)))+
+    geom_histogram(position="stack", binwidth=1) +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette="Dark2") +
     scale_fill_manual(values=c("#003262", "#FDB515"),
@@ -228,7 +235,8 @@ plot_rand_practice = function (){
 
 plot_scores = function() {
   dataset %>% ggplot(aes(x=score, fill=as.factor(treat)))+
-    geom_bar(stat="count", position="dodge") +
+    geom_histogram(position="dodge") +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette="Dark2") +
     scale_fill_manual(values=c("#003262", "#FDB515"),
@@ -239,14 +247,15 @@ plot_scores = function() {
 }
 
 plot_gender = function() {
-  ggplot(dataset, aes(x=gender)) + 
+  ggplot(dataset, aes(x=as.factor(gender))) + 
   geom_bar() +
   ggtitle("Distribution of Gender")
 }
 
 plot_age = function() {
 dataset %>% ggplot(aes(x=age, fill=gender))+
-    geom_bar(stat="count", position="stack", binwidth=3) +
+    geom_bar(position="stack") +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette="Dark2") +
     scale_fill_manual(values=c("#003262", "#FDB515", "#C4820E"),
@@ -259,7 +268,8 @@ dataset %>% ggplot(aes(x=age, fill=gender))+
 plot_score_diffs = function () {
   dataset %>% ggplot(aes(x=score, fill=treat))+
     geom_density(stat="count", alpha=0.3)+
-    geom_histogram(stat="count", position="dodge") +
+    geom_histogram(position="dodge") +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette="Dark2") +
     scale_fill_manual(values=c("#003262", "#FDB515"),
