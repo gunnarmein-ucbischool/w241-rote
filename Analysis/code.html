@@ -618,17 +618,31 @@ dataset %&gt;% ggplot(aes(x=age, fill=gender))+
 }
 
 plot_score_diffs = function () {
-  dataset %&gt;% ggplot(aes(x=score, fill=treat))+
-    geom_density(stat=&quot;count&quot;, alpha=0.3)+
-    geom_histogram(position=&quot;dodge&quot;) +
-    stat_count()+
+  dataset %&gt;% ggplot(aes(x=score, fill=as.factor(treat)))+
+    geom_histogram(position=&quot;dodge&quot;, binwidth=1) +
     theme_minimal() +
-    #scale_fill_brewer(palette=&quot;Dark2&quot;) +
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
                       labels=c(&quot;Control&quot;, &quot;Treatment&quot;))+
     ylab(&quot;Frequency&quot;) + 
-    ggtitle(&quot;Score difference between baseline and experiment&quot;) +
+    ggtitle(&quot;Score differences&quot;) +
     theme(legend.title = element_blank())
+}
+
+plot_score_diffs_smooth = function () {
+  dataset %&gt;% ggplot(aes(x=score, fill=as.factor(treat)))+
+    geom_density(alpha=0.6)+
+    theme_minimal() +
+    scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
+                      labels=c(&quot;Control&quot;, &quot;Treatment&quot;))+
+    ylab(&quot;Frequency&quot;) + 
+    ggtitle(&quot;Score differences&quot;) +
+    theme(legend.title = element_blank())
+}
+
+plot_diffs_all = function() {
+  p1 = plot_score_diffs()
+  p2 = plot_score_diffs_smooth()
+  ggarrange(p1, p2, nrow=1, ncol=2)
 }
 
 plot_participation = function() {
@@ -638,7 +652,6 @@ plot_participation = function() {
     geom_bar(stat=&quot;identity&quot;) +
     theme_minimal() +
     scale_x_discrete(limits=c(&quot;started&quot;, &quot;covariates&quot;, &quot;baseline&quot;, &quot;complete&quot;)) +
-    #scale_fill_brewer(palette=&quot;Dark2&quot;) +
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#3B7EA1&quot;, &quot;#FDB515&quot;, &quot;#C4820E&quot;))+
     ylab(&quot;Participants&quot;) + 
     ggtitle(&quot;Participation by stage&quot;) 
@@ -657,6 +670,16 @@ plot_attrition = function () {
     ylab(&quot;Participants dropping out&quot;) +
     ggtitle(&quot;Attrition by stage&quot;)  +
     theme(legend.title=element_blank())
+}
+
+plot_rand = function() {
+  p1 = plot_rand_age()
+  p2 = plot_rand_reading()
+  p3 = plot_rand_gender()
+  p4 = plot_rand_practice()
+  ggarrange(p1,p2,p3,p4,
+            labels = c(&quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;D&quot;),
+            ncol = 2, nrow = 2)
 }</code></pre>
 
 

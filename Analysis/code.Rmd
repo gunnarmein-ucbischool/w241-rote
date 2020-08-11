@@ -98,7 +98,7 @@ load_data = function(){
 
   dataset <- dataset %>% 
     filter %>% 
-    select("session_id", "score", "cluster", "gender", "age", 
+    select("session_id", "score", "score_pre", "score_post", "cluster", "gender", "age", 
            "prior_knowledge", "treat","reading", "practice")
   
 }
@@ -268,17 +268,59 @@ dataset %>% ggplot(aes(x=age, fill=gender))+
 }
 
 plot_score_diffs = function () {
-  dataset %>% ggplot(aes(x=score, fill=treat))+
-    geom_density(stat="count", alpha=0.3)+
-    geom_histogram(position="dodge") +
-    stat_count()+
+  dataset %>% ggplot(aes(x=score, fill=as.factor(treat)))+
+    geom_histogram(position="dodge", binwidth=1) +
     theme_minimal() +
-    #scale_fill_brewer(palette="Dark2") +
     scale_fill_manual(values=c("#003262", "#FDB515"),
                       labels=c("Control", "Treatment"))+
     ylab("Frequency") + 
-    ggtitle("Score difference between baseline and experiment") +
+    ggtitle("Score differences") +
     theme(legend.title = element_blank())
+}
+
+plot_score_diffs_smooth = function () {
+  dataset %>% ggplot(aes(x=score, fill=as.factor(treat)))+
+    geom_density(alpha=0.6)+
+    theme_minimal() +
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    ylab("Frequency") + 
+    ggtitle("Score differences") +
+    theme(legend.title = element_blank())
+}
+
+plot_score_pre = function () {
+  dataset %>% ggplot(aes(x=score_pre, fill=as.factor(treat)))+
+    geom_histogram(position="stack", binwidth=1) +
+    theme_minimal() +
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    ylab("Frequency") + 
+    ggtitle("Pre-treatment scores") +
+    theme(legend.title = element_blank())
+}
+
+plot_score_post = function () {
+  dataset %>% ggplot(aes(x=score_post, fill=as.factor(treat)))+
+    geom_histogram(position="stack", binwidth=1) +
+    theme_minimal() +
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    ylab("Frequency") + 
+    ggtitle("Post-treatment scores") +
+    theme(legend.title = element_blank())
+}
+
+plot_scores = function() {
+  p1 = plot_score_pre()
+  p2 = plot_score_post()
+  ggarrange(p1, p2, nrow=1, ncol=2)
+}
+
+plot_diffs_all = function() {
+  p1 = plot_score_diffs()
+  p2 = plot_score_diffs_smooth()
+  ggarrange(p1, p2, nrow=1, ncol=2)
 }
 
 plot_participation = function() {
@@ -288,7 +330,6 @@ plot_participation = function() {
     geom_bar(stat="identity") +
     theme_minimal() +
     scale_x_discrete(limits=c("started", "covariates", "baseline", "complete")) +
-    #scale_fill_brewer(palette="Dark2") +
     scale_fill_manual(values=c("#003262", "#3B7EA1", "#FDB515", "#C4820E"))+
     ylab("Participants") + 
     ggtitle("Participation by stage") 
@@ -307,6 +348,16 @@ plot_attrition = function () {
     ylab("Participants dropping out") +
     ggtitle("Attrition by stage")  +
     theme(legend.title=element_blank())
+}
+
+plot_rand = function() {
+  p1 = plot_rand_age()
+  p2 = plot_rand_reading()
+  p3 = plot_rand_gender()
+  p4 = plot_rand_practice()
+  ggarrange(p1,p2,p3,p4,
+            labels = c("A","B","C","D"),
+            ncol = 2, nrow = 2)
 }
 
 ```

@@ -71,28 +71,34 @@ The actual age distribution of participant who completed the test is displayed i
 
 ## Comparison of potential outcomes 
 
-The format of our experiment was a multiple choice test. Study participants would read a passage for a predetermined amount of time (generally around 2 minutes per passage, depending on length), and would subsequently be presented with a set of multiple choice questions. 
+The format of our experiment was a multiple choice test. Study participants would read a passage for a predetermined amount of time (generally around 2 minutes per passage, depending on length), and would subsequently be presented with a set of multiple choice questions. Possible scores on each test ranges from 0 (fully incorrect) to 8 (fully correct). What we are interested in is the difference in score between the pre-test (before treatment) and the post-test (after treatment). For the control group, the expected difference between tests is 0 in an ideal world. In the real world, subjects might get tired between tests and score lower on the second part, or also might get warmed up to the process of memorization and testing and score higher. However, with proper randomization, the expected value of score difference between treatment and control should be 0 if the treatment has no effect. 
 
 ## Randomization process
 
 Participants were assigned to "control" and "treatment" group randomly. The software did this right after covariates were gathered. In anticipation of collusion between students, we decided to cluster by time slot, in 5-minute increments. In hindsight, this was not necessary given our randomized draw from a question bank which made spillover effects unlikely, but it also did not hurt our process or errors too much. Students by-and-large took the tests in different time slots.
 
-## Treatment
+## Pre-treatment-phase content and test
 
-todo: [2 screenshots, one from treatment and one from control]
+The first part of the experiment is the same for control and treatment - two content items are displayed along with questions we intend to ask, then a distraction takes the subject's mind off the content for about a minute, and then we test the subject on the two topics with 4 questions per topic, with 5 possible choices for each question. This gives us 8 "correct"/"incorrect" scores, which we record as a "baseline" score.
 
-The treatment of this experiment is in Part 2. The participants in the treatment group will read 2 passages with 4 questions for each passage that they will answer later on. At the top of the screen, there is instruction to read the answers to the questions shown out loud 5 times. This allows the participants to have repeated memory of speaking the concept. On the screen after, the participants will be shown the same passages and questions. At the top of this screen, there is instruction for participants to read the passage again and type out brief answers to the questions. This allows the participants to have written memory of the concept. Showing the passages and instructing the participants to read the passages on 2 different screens allows them to have repeated memory of seeing the concept. The treatment as a whole allows the participants to have repeated memory of seeing and speaking the concept and written memory of the concept and therefore tests our hypothesis. After these 2 screens, the participants will watch a 1 minute distraction video then go to a screen where they will select correct answers for the questions in multiple choice format. 
+## Treatment-phase content and test
+
+The treatment of this experiment is in Part 2. The participants in the treatment group will read 2 passages with 4 questions for each passage that they will answer later on. At the top of the screen, there is instruction to read the answers to the questions shown out loud 5 times. This allows the participants to have repeated memory of speaking the concept. On the screen after, the participants will be shown the same passages and questions. At the top of this screen, there is instruction for participants to read the passage again and type out brief answers to the questions. This allows the participants to have written memory of the concept. Showing the passages and instructing the participants to read the passages on 2 different screens allows them to have repeated memory of seeing the concept. The treatment as a whole allows the participants to have repeated memory of seeing and speaking the concept and written memory of the concept and therefore tests our hypothesis. After these 2 screens, the participants will watch a 1 minute distraction video, then go to a screen where they will select correct answers for the questions in multiple choice format. We once again record their 8 correct/incorrect answers, this time marked as "experiment" scores. 
 
 ## Power calculation
 
 Prior to conducting our experiment, we used a ballpark estimate in order to estimate how many observations we would need. We used an online power calculator (https://www.stat.ubc.ca/~rollin/stats/ssize/n2.html) in order to estimate our necessary effect size. Given that each study participant would answer 8 questions (with 5 multiple choice options), we used a binomial distribution to estimate our value for $\sigma$ (arriving at an estimated $\sigma$ of $1.131$).
 
-We estimated an effect size of getting one question right between treatment and control. With the experiment parameters of 0.05 and power calculation of .8, we estimated that we would need roughly 21 samples per group. 
+We estimated an effect size of getting on average one additional question right between treatment and control. With the experiment parameters of 0.05 and power calculation of .8, we estimated that we would need roughly 21 samples per group. 
 
 In retrospect, this back of the envelope calculation was not extremely helpful. We would have benefited greatly from a pretest, however, due to a software bug, we were unable to properly assess the results of our pretest. In retrospect, our estimated effect size was far too high. People generally were able to score quite well on the exam regardless of if they were in treatment or control.
 
+todo: how much power did we actually have?
+
 \pagebreak
 # Analysis of results
+
+We ended the experiment at a time we set several days in advance, after discussing that new participation had ebbed off and that without further marketing, we could not expect more, and none of us had any grand ideas for producing more subjects. The day we picked lined up with our initial time line. 
 
 ## Loading and preprocessing the data
 
@@ -104,14 +110,17 @@ dataset_treat <- dataset %>% filter(treat == 1)
 
 ## EDA
 
-```{r, results='asis'}
+```{r, echo=FALSE, results='asis'}
 stargazer(dataset, header=FALSE)
 ```
 
+At the end of the experiment, we had `r nrow(dataset[dataset$treat==0,])` subjects in control and `r nrow(dataset[dataset$treat==1,])` in treatment. 
 
-```{r EDA, warning=FALSE}
+```{r EDA, echo=FALSE, warning=FALSE}
 plot_age()
 ```
+
+In the age distribution of only people who completed the whole experiment, we can see a group of Eastside Prepartory School students under the age of 20, a female-leaning cluster of certain Facebook friends over the age of 50, and a mixed group of other social media recruits between those groups. Gender balance does not look bad. 
 
 ## Randomization checks
 
@@ -119,7 +128,7 @@ plot_age()
 
 We used 2 methods to validate the randomization process worked. The first method is to create a regression model using covariate information collected to predict whether the participant was be assigned to control or treatment group. We created this regression model both for all participants who got assigned and for only participants who completed the survey. We concluded that the treatment assignment was random as none of the covariates had a significant predicting power. Details of the regression models are attached below.
 
-```{r, results='asis'}
+```{r, echo=FALSE, results='asis'}
 stargazer(cov_check_regression(), header=FALSE)
 ```
 
@@ -127,23 +136,57 @@ stargazer(cov_check_regression(), header=FALSE)
 
 The second method of validating randomization is to look at the distribution of control versus treatment assignment over participants’ age, gender, self-reported memorization skill, and self-reported reading skill. As shown in the graphs below, the distribution of control versus treatment assignment are fairly even among all the participant groups. Therefore, we validated the randomization worked.
 
-```{r}
-p1 = plot_rand_age()
-p2 = plot_rand_reading()
-p3 = plot_rand_gender()
-p4 = plot_rand_practice()
-ggarrange(p1,p2,p3,p4,
-          labels = c("A","B","C","D"),
-          ncol = 2, nrow = 2)
+```{r echo=FALSE}
+plot_rand()
 ```
+
+### Glance at score distribution
+
+As part of our EDA, we take a look at the distribution of differential (post-pre) scores between treatment and control:
+
+```{r echo=FALSE}
+plot_diffs_all()
+```
+
+We can see the distribution shifted to the positive in the treatment group, by about a little under a full score point. Let's see whether it holds up statistically.
 
 ## Effect calculation
 
-todo: everything
+As discussed above, one primary method of effect calculation for us was looking at the differences between pre- and post-treatment-phase scores. In this spirit, we now regress that difference on (1) only the treatment indicator `treat` and (2) on the treatment indicator along with a number of covariates to compute the ATET:
 
 ```{r, results='asis'}
 result_regressions()
 ```
+
+Disappointingly, the inclusion of covariates did nothing to reduce our (cluster-robust) standard errors for the ATET. 
+
+todo: alternate calculation of treatment effect by panel?
+
+## Discussion of experiment
+
+### Attrition
+
+todo
+
+### Calibration of questions / general scoring
+
+A look at the pre- and post-treatment scores is instructive:
+
+```{r}
+plot_scores()
+```
+
+Subjects scored well on our questions to begin with, there wasn't all that much room for improvement. This suggests that our content was too easy to memorize, or that our multiple-choice questions were too easy to answer. 
+
+## Suggestions for future experiments
+
+todo: expand
+
+- Longer, bug-free pre-study
+- Captive audience
+- Harder questions
+- Shorter content
+- Hard-coded page flow
 
 \pagebreak
 # Appendix
