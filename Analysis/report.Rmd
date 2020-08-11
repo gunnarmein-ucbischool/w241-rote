@@ -1,11 +1,12 @@
 ---
 title: "Rote Memorization Techniques"
-subtitle: "W241 Summer 2020 (Daniel Hedstrom Wed 6:30 pm) Final Project"
+subtitle: "W241 Summer 2020 (Daniel Hedblom Wed 6:30 pm) Final Project"
 author: "Tina Huang, Gunnar Mein, Jeff Li"
 date: "8/12/2020"
 output:
   pdf_document: default
   html_document: default
+
 ---
 \raggedright
 \setcounter{tocdepth}{2}
@@ -23,6 +24,8 @@ library(ggpubr)
 library(stargazer)
 library(sandwich)
 library(lmtest)
+library(png)
+library(grid)
 options(scipen=999)
 ```
 
@@ -50,9 +53,9 @@ When we need to memorize purely abstract concepts for their own sake, we can man
 Our specific hypothesis is, then, that students memorizing content by vocalizing them and writing them down should see a significantly higher score when evaluated over multiple such exercises, compared to students who only read the content quietly.
 
 \pagebreak
-# Experiment Design
+# Experiment design
 
-## Basic Structure
+## Basic structure
 
 There were 2 portions of our test. The first portion was a “baseline” portion, where study participants would be presented 2 passages. The second portion would consist of the actual experiment, where our study participants would then be randomized into “treatment” or “control” groups.
 
@@ -60,17 +63,17 @@ There were 2 portions of our test. The first portion was a “baseline” portio
 
 Subjects were randomly assigned 2 topics in both Part 1 and Part 2 from a pool of 8 questions ranging from topics from “Units for the Calorie Content of Food'' to the “History of the Submarine”. After reading each passage, they were given a video distraction and then given 4 multiple choice questions on what they had read. Screen shots are provided in the appendix with sample passages and questions that people were presented with
 
-## Test Subjects
+## Test subjects
 
 Since one of our team members is a high school teacher in Washington state, we decided to solicit the students of this school to participate in this experiment. Due to a need for additional study participants, all of the team members also solicited people on social media, as well as family and friends in order to participate in this experiment, rounding out our "considered" subjects. "Assigned" were subjects who at least made it as far as entering and submitting covariants. Since there was major attrition beyond that point, the "actually evaluated" subjects are only those who completed the whole test. We have detailed data about which subjects attrited at what point, and can compute an average treatment effect on the treated (ATET).
 
 The actual age distribution of participant who completed the test is displayed in the results section. Middle school to high school age range accounted for around a third of the total participants. The rest were distributed between the 20 to 80 years old, and the older portion skews toward the female gender.
 
-## Comparison of Potential Outcomes 
+## Comparison of potential outcomes 
 
 The format of our experiment was a multiple choice test. Study participants would read a passage for a predetermined amount of time (generally around 2 minutes per passage, depending on length), and would subsequently be presented with a set of multiple choice questions. 
 
-## Randomization Process
+## Randomization process
 
 Participants were assigned to "control" and "treatment" group randomly. The software did this right after covariates were gathered. In anticipation of collusion between students, we decided to cluster by time slot, in 5-minute increments. In hindsight, this was not necessary given our randomized draw from a question bank which made spillover effects unlikely, but it also did not hurt our process or errors too much. Students by-and-large took the tests in different time slots.
 
@@ -80,7 +83,7 @@ todo: [2 screenshots, one from treatment and one from control]
 
 The treatment of this experiment is in Part 2. The participants in the treatment group will read 2 passages with 4 questions for each passage that they will answer later on. At the top of the screen, there is instruction to read the answers to the questions shown out loud 5 times. This allows the participants to have repeated memory of speaking the concept. On the screen after, the participants will be shown the same passages and questions. At the top of this screen, there is instruction for participants to read the passage again and type out brief answers to the questions. This allows the participants to have written memory of the concept. Showing the passages and instructing the participants to read the passages on 2 different screens allows them to have repeated memory of seeing the concept. The treatment as a whole allows the participants to have repeated memory of seeing and speaking the concept and written memory of the concept and therefore tests our hypothesis. After these 2 screens, the participants will watch a 1 minute distraction video then go to a screen where they will select correct answers for the questions in multiple choice format. 
 
-## Power Calculation
+## Power calculation
 
 Prior to conducting our experiment, we used a ballpark estimate in order to estimate how many observations we would need. We used an online power calculator (https://www.stat.ubc.ca/~rollin/stats/ssize/n2.html) in order to estimate our necessary effect size. Given that each study participant would answer 8 questions (with 5 multiple choice options), we used a binomial distribution to estimate our value for $\sigma$ (arriving at an estimated $\sigma$ of $1.131$).
 
@@ -89,9 +92,9 @@ We estimated an effect size of getting one question right between treatment and 
 In retrospect, this back of the envelope calculation was not extremely helpful. We would have benefited greatly from a pretest, however, due to a software bug, we were unable to properly assess the results of our pretest. In retrospect, our estimated effect size was far too high. People generally were able to score quite well on the exam regardless of if they were in treatment or control.
 
 \pagebreak
-# Analysis of Results
+# Analysis of results
 
-## Loading and Preprocessing the Data
+## Loading and preprocessing the data
 
 ```{r data_preprocessing, message=FALSE}
 dataset = load_data()
@@ -110,9 +113,9 @@ stargazer(dataset, header=FALSE)
 plot_age()
 ```
 
-## Randomization Checks
+## Randomization checks
 
-### Check by Regression
+### Check by regression
 
 We used 2 methods to validate the randomization process worked. The first method is to create a regression model using covariate information collected to predict whether the participant was be assigned to control or treatment group. We created this regression model both for all participants who got assigned and for only participants who completed the survey. We concluded that the treatment assignment was random as none of the covariates had a significant predicting power. Details of the regression models are attached below.
 
@@ -120,7 +123,7 @@ We used 2 methods to validate the randomization process worked. The first method
 stargazer(cov_check_regression(), header=FALSE)
 ```
 
-### Visual Check
+### Visual check
 
 The second method of validating randomization is to look at the distribution of control versus treatment assignment over participants’ age, gender, self-reported memorization skill, and self-reported reading skill. As shown in the graphs below, the distribution of control versus treatment assignment are fairly even among all the participant groups. Therefore, we validated the randomization worked.
 
@@ -134,7 +137,7 @@ ggarrange(p1,p2,p3,p4,
           ncol = 2, nrow = 2)
 ```
 
-## Effect Calculation
+## Effect calculation
 
 todo: everything
 
@@ -145,7 +148,83 @@ result_regressions()
 \pagebreak
 # Appendix
 
-## Code
+## Code structure
+
+Rote is a Java project utilizing SparkJava as a bare-bones web-server framework. The client consists of plain HTML and JavaScript with a minimal dose of bootstrap CSS. 
+
+The project ran locally on a Tomcat server on MacOS for development and debugging, and on a similar Tomcat setup inside a Microsoft Azure Linux box for the real experiment. All code was developed in Apache NetBeans 11.3. 
+
+The repository is available at https://github.com/gunnarmein-ucbischool/w241-rote.
+
+```{r, out.height = "400px", echo=FALSE}
+knitr::include_graphics("code_struct.png")
+```
+
+\pagebreak
+
+## Screen shots
+
+### Welcome
+
+```{r, out.width = "400px", echo=FALSE}
+knitr::include_graphics("welcome.png")
+```
+
+### Admin UI
+
+```{r, out.width = "400px", echo=FALSE}
+knitr::include_graphics("admin.png")
+```
+
+### Gathering covariates
+
+```{r, out.width = "400px", echo=FALSE}
+knitr::include_graphics("covariates.png")
+```
+
+### Intermission (one example only)
+
+```{r, out.width = "400px", echo=FALSE}
+knitr::include_graphics("intermission.png")
+```
+
+### Memorization
+
+```{r, out.width = "400px", echo=FALSE}
+knitr::include_graphics("memorization.png")
+```
+
+### Treatment (part 1)
+
+```{r, out.width = "400px", echo=FALSE}
+knitr::include_graphics("treat1.png")
+```
+
+### Treatment (part 2)
+
+```{r, out.width = "400px", echo=FALSE}
+knitr::include_graphics("treat2.png")
+```
+
+### Test
+
+```{r, out.width = "400px", echo=FALSE}
+knitr::include_graphics("test.png")
+```
+
+### Feedback
+
+```{r, out.width = "400px", echo=FALSE}
+knitr::include_graphics("feedback.png")
+```
+
+## Logs
+
+The general operations log, covariates log, written submissions log, and test results log can be viewed at:
+
+https://drive.google.com/drive/folders/1t1wtW139ow35JUcuspJsWoYNjJzNNaK_?usp=sharing 
+
+## Full analysis code
 
 ```{r child='code.Rmd'}
 ```

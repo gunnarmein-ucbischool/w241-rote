@@ -366,6 +366,103 @@ summary {
 </div>
 
 
+<pre class="r"><code>load_data = function(){
+  # import files
+  rote_cov_original &lt;- read.csv(file=&quot;rote_cov.csv&quot;, sep=&#39;,&#39;) #covariates
+  rote_test_original &lt;- read.csv(file=&quot;rote_test.csv&quot;, sep=&#39;,&#39;) #test file
+  
+  # create copies
+  rote_cov &lt;- rote_cov_original
+  rote_test &lt;- rote_test_original
+  
+  # convert unix epoch time to datetime
+  # cov
+  rote_cov$session_start_time &lt;- as.POSIXct(rote_cov$session_start_time/1000, origin=&quot;1970-01-01&quot;)
+  rote_cov$cov_submit_time &lt;- as.POSIXct(rote_cov$cov_submit_time/1000, origin=&quot;1970-01-01&quot;)
+  
+  # test
+  rote_test$session_start_time &lt;- as.POSIXct(rote_test$session_start_time/1000, origin=&quot;1970-01-01&quot;)
+  rote_test$test_submit_time &lt;- as.POSIXct(rote_test$test_submit_time/1000, origin=&quot;1970-01-01&quot;)
+  rote_test$test_time &lt;- rote_test$test_submit_time - rote_test$session_start_time
+  
+  # remove rows with any NAs in the answers(indicates they did not complete the test)
+  rote_test &lt;- rote_test %&gt;% drop_na(&quot;a11&quot;, &quot;a12&quot;, &quot;a13&quot;, &quot;a14&quot;, &quot;a21&quot;, &quot;a22&quot;, &quot;a23&quot;,&quot;a24&quot;)
+  
+  rote_test_baseline &lt;- rote_test %&gt;% filter(test == &#39;baseline&#39;)
+  rote_test_experiment &lt;- rote_test %&gt;% filter(test == &#39;experiment&#39;) %&gt;%
+    select(&#39;session_id&#39;,&#39;item_id1&#39;,&#39;a11&#39;,&#39;a12&#39;, &#39;a13&#39;, &#39;a14&#39;, &#39;a21&#39;, &#39;a22&#39;, &#39;a23&#39;,&#39;a24&#39;,
+           &#39;item_id2&#39;, &#39;c11&#39;,&#39;c12&#39;, &#39;c13&#39;, &#39;c14&#39;, &#39;c21&#39;, &#39;c22&#39;, &#39;c23&#39;,&#39;c24&#39;)
+  
+  rote_test &lt;- inner_join(rote_test_baseline, rote_test_experiment, by=&quot;session_id&quot; )
+  
+  
+  # remove rows with missing covariates
+  # convert age, remove outliers for age
+  suppressWarnings(
+    rote_cov$age &lt;- ifelse(as.numeric(as.character(rote_cov$age)) &gt; 100, 
+                           NA, as.numeric(as.character(rote_cov$age))))
+  rote_cov &lt;- rote_cov %&gt;% drop_na(&quot;age&quot;)
+  
+  #fix gender
+  rote_cov$gender &lt;- ifelse(rote_cov$gender == &#39;other&#39;, NA, rote_cov$gender)
+  
+  
+  # on test file, establish if testee answer matches actual answer. 
+  # if it matches, set var to 1, else 0. 
+  # notation will be o11, o12, etc (o is for outcome)
+  # x = baseline
+  # y = treatment
+  rote_test$o11x &lt;- ifelse(rote_test$a11.x == rote_test$c11.x, 1, 0)
+  rote_test$o12x &lt;- ifelse(rote_test$a12.x == rote_test$c12.x, 1, 0)
+  rote_test$o13x &lt;- ifelse(rote_test$a13.x == rote_test$c13.x, 1, 0)
+  rote_test$o14x &lt;- ifelse(rote_test$a14.x == rote_test$c14.x, 1, 0)
+  rote_test$o21x &lt;- ifelse(rote_test$a21.x == rote_test$c21.x, 1, 0)
+  rote_test$o22x &lt;- ifelse(rote_test$a22.x == rote_test$c22.x, 1, 0)
+  rote_test$o23x &lt;- ifelse(rote_test$a23.x == rote_test$c23.x, 1, 0)
+  rote_test$o24x &lt;- ifelse(rote_test$a24.x == rote_test$c24.x, 1, 0)
+  
+  rote_test$o11y &lt;- ifelse(rote_test$a11.y == rote_test$c11.y, 1, 0)
+  rote_test$o12y &lt;- ifelse(rote_test$a12.y == rote_test$c12.y, 1, 0)
+  rote_test$o13y &lt;- ifelse(rote_test$a13.y == rote_test$c13.y, 1, 0)
+  rote_test$o14y &lt;- ifelse(rote_test$a14.y == rote_test$c14.y, 1, 0)
+  rote_test$o21y &lt;- ifelse(rote_test$a21.y == rote_test$c21.y, 1, 0)
+  rote_test$o22y &lt;- ifelse(rote_test$a22.y == rote_test$c22.y, 1, 0)
+  rote_test$o23y &lt;- ifelse(rote_test$a23.y == rote_test$c23.y, 1, 0)
+  rote_test$o24y &lt;- ifelse(rote_test$a24.y == rote_test$c24.y, 1, 0)
+  
+  rote_test$score_pre &lt;- rote_test$o11x + rote_test$o12x + rote_test$o13x +
+    rote_test$o14x + rote_test$o21x + rote_test$o22x + rote_test$o23x + rote_test$o24x
+  rote_test$score_post &lt;- rote_test$o11y + rote_test$o12y + rote_test$o13y + 
+    rote_test$o14y + rote_test$o21y + rote_test$o22y + rote_test$o23y + rote_test$o24y
+  
+  rote_test$score =  rote_test$score_post - rote_test$score_pre
+  
+  #on covariates file, sum knowledge scores together
+  rote_cov$knowledge_cov_pre &lt;- rote_cov$knowledge1 + rote_cov$knowledge2 
+  rote_cov$knowledge_cov_post &lt;- rote_cov$knowledge3 + rote_cov$knowledge4
+  rote_cov$prior_knowledge &lt;- rote_cov$knowledge_cov_post + rote_cov$knowledge_cov_pre
+  
+  #convert necessary columns to boolean
+  rote_test$treat &lt;- ifelse(rote_test$treat == &quot;false&quot;, 0 , 1)
+  rote_cov$treat &lt;- ifelse(rote_cov$treat == &quot;false&quot;, 0 , 1)
+  
+  #get distinct ids
+  rote_test &lt;- rote_test[!duplicated(rote_test$session_id),]
+  rote_cov &lt;- rote_cov[!duplicated(rote_cov$session_id),]
+  
+  #inner join 2 datasets
+  dataset &lt;- inner_join(rote_test, rote_cov, by=&quot;session_id&quot; )
+
+  dataset$treat &lt;- dataset$treat.x
+  dataset$cluster &lt;- dataset$cluster.x
+  dataset$gender &lt;- as.factor(dataset$gender)
+
+  dataset &lt;- dataset %&gt;% 
+    filter %&gt;% 
+    select(&quot;session_id&quot;, &quot;score&quot;, &quot;cluster&quot;, &quot;gender&quot;, &quot;age&quot;, 
+           &quot;prior_knowledge&quot;, &quot;treat&quot;,&quot;reading&quot;, &quot;practice&quot;)
+  
+}</code></pre>
 <pre class="r"><code>attrition = function() {
   # todo: df3 is the dataset before covariates are joined, need to see how to reconstruct that
   df2 = left_join(df_b, df_e, by=&#39;session_id&#39;)
@@ -383,7 +480,8 @@ summary {
   summary(df3$completed)
   df3$treat = as.numeric(df3$treat)
   str(df3)
-  df3$completed = factor(df3$completed, levels=c(&quot;started&quot;, &quot;covariates&quot;, &quot;baseline&quot;, &quot;completed&quot;))
+  df3$completed = factor(df3$completed, 
+                         levels=c(&quot;started&quot;, &quot;covariates&quot;, &quot;baseline&quot;, &quot;completed&quot;))
   
   str(df3)
   n=218-171
@@ -396,18 +494,14 @@ summary {
 }
 
 print_stats = function() {
-  print(paste(&quot;After cleaning, the number of rows in our dataset is:&quot;, toString(nrow(dataset))))
-  print(paste(&quot;After cleaning, the number of observations in treatment is:&quot;, toString(sum(dataset$treat))))
-  print(paste(&quot;After cleaning, the number of observations in control is:&quot;, toString(nrow(dataset) - sum(dataset$treat))))
+  print(paste(&quot;After cleaning, the number of rows in our dataset is:&quot;, 
+              toString(nrow(dataset))))
+  print(paste(&quot;After cleaning, the number of observations in treatment is:&quot;, 
+              toString(sum(dataset$treat))))
+  print(paste(&quot;After cleaning, the number of observations in control is:&quot;, 
+              toString(nrow(dataset) - sum(dataset$treat))))
 }
 
-
-calc_regressions = function() {
-  regression1 &lt;- lm(score ~ treat + age + prior_knowledge + reading + gender + practice,data=dataset)
-  regression2 &lt;- lm(score ~ treat ,data=dataset)
-  clustered_errors1 &lt;- vcovCL_1c &lt;- vcovCL(regression1, cluster = dataset[ , &#39;cluster&#39;])
-  clustered_errors2 &lt;- vcovCL_2c &lt;- vcovCL(regression2, cluster = dataset[ , &#39;cluster&#39;])
-}
 
 print_summary = function() {
   stargazer(dataset, 
@@ -416,7 +510,11 @@ print_summary = function() {
             type=&quot;latex&quot;) #flip type between text and latex
 }
 
-print_regressions = function() {
+result_regressions = function() {
+  regression1 &lt;- lm(score ~ treat ,data=dataset)
+  regression2 &lt;- lm(score ~ treat + age + prior_knowledge + reading + gender + practice,data=dataset)
+  clustered_errors1 &lt;- vcovCL_1c &lt;- vcovCL(regression1, cluster = dataset[ , &#39;cluster&#39;])
+  clustered_errors2 &lt;- vcovCL_2c &lt;- vcovCL(regression2, cluster = dataset[ , &#39;cluster&#39;])
   stargazer(regression1, regression2, 
             header = F, 
             type = &quot;latex&quot;, 
@@ -426,9 +524,14 @@ print_regressions = function() {
             star.cutoffs = c(0.05, 0.01, 0.001),
             title=&quot;Regression Results with Clustered Standard Errors&quot;)
 }</code></pre>
+<pre class="r"><code>cov_check_regression = function() {
+  glm(treat~age+gender+practice+reading+prior_knowledge, 
+      data=dataset, family=binomial(link=&quot;logit&quot;))
+}</code></pre>
 <pre class="r"><code>plot_rand_gender = function (){
-  dataset %&gt;% ggplot(aes(x=gender, fill=treat))+
-    geom_bar(stat=&quot;count&quot;, position=&quot;stack&quot;) +
+  dataset %&gt;% ggplot()+
+    geom_bar(aes(x=gender, fill=as.factor(treat)),
+             position=&quot;stack&quot;) +
     theme_minimal() +
     #scale_fill_brewer(palette=&quot;Dark2&quot;) +
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
@@ -440,8 +543,10 @@ print_regressions = function() {
 }
 
 plot_rand_age = function (){
-  dataset %&gt;% ggplot(aes(x=age, fill=treat))+
-    geom_bar(stat=&quot;count&quot;, position=&quot;stack&quot;, binwidth=3) +
+  dataset %&gt;% 
+    ggplot(aes(x=age, fill=as.factor(treat)))+
+    geom_histogram(position=&quot;stack&quot;, binwidth=3) +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette=&quot;Dark2&quot;) +
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
@@ -453,8 +558,9 @@ plot_rand_age = function (){
 }
 
 plot_rand_reading = function (){
-  dataset %&gt;% ggplot(aes(x=reading, fill=treat))+
-    geom_bar(stat=&quot;count&quot;, position=&quot;stack&quot;, binwidth=1) +
+  dataset %&gt;% ggplot(aes(x=reading, fill=as.factor(treat)))+
+    geom_histogram(position=&quot;stack&quot;, binwidth=1) +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette=&quot;Dark2&quot;) +
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
@@ -466,8 +572,9 @@ plot_rand_reading = function (){
 }
 
 plot_rand_practice = function (){
-  dataset %&gt;% ggplot(aes(x=practice, fill=treat))+
-    geom_bar(stat=&quot;count&quot;, position=&quot;stack&quot;, binwidth=1) +
+  dataset %&gt;% ggplot(aes(x=practice, fill=as.factor(treat)))+
+    geom_histogram(position=&quot;stack&quot;, binwidth=1) +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette=&quot;Dark2&quot;) +
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
@@ -480,7 +587,8 @@ plot_rand_practice = function (){
 
 plot_scores = function() {
   dataset %&gt;% ggplot(aes(x=score, fill=as.factor(treat)))+
-    geom_bar(stat=&quot;count&quot;, position=&quot;dodge&quot;) +
+    geom_histogram(position=&quot;dodge&quot;) +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette=&quot;Dark2&quot;) +
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
@@ -491,14 +599,15 @@ plot_scores = function() {
 }
 
 plot_gender = function() {
-  ggplot(dataset, aes(x=gender)) + 
+  ggplot(dataset, aes(x=as.factor(gender))) + 
   geom_bar() +
   ggtitle(&quot;Distribution of Gender&quot;)
 }
 
 plot_age = function() {
 dataset %&gt;% ggplot(aes(x=age, fill=gender))+
-    geom_bar(stat=&quot;count&quot;, position=&quot;stack&quot;, binwidth=3) +
+    geom_bar(position=&quot;stack&quot;) +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette=&quot;Dark2&quot;) +
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;, &quot;#C4820E&quot;),
@@ -511,7 +620,8 @@ dataset %&gt;% ggplot(aes(x=age, fill=gender))+
 plot_score_diffs = function () {
   dataset %&gt;% ggplot(aes(x=score, fill=treat))+
     geom_density(stat=&quot;count&quot;, alpha=0.3)+
-    geom_histogram(stat=&quot;count&quot;, position=&quot;dodge&quot;) +
+    geom_histogram(position=&quot;dodge&quot;) +
+    stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette=&quot;Dark2&quot;) +
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),

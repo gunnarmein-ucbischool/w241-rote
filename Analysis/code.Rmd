@@ -4,7 +4,7 @@ output: html_document
 ---
 
 
-```{r echo=FALSE, include=FALSE}
+```{r}
 load_data = function(){
   # import files
   rote_cov_original <- read.csv(file="rote_cov.csv", sep=',') #covariates
@@ -28,14 +28,18 @@ load_data = function(){
   rote_test <- rote_test %>% drop_na("a11", "a12", "a13", "a14", "a21", "a22", "a23","a24")
   
   rote_test_baseline <- rote_test %>% filter(test == 'baseline')
-  rote_test_experiment <- rote_test %>% filter(test == 'experiment') %>% select('session_id','item_id1','a11','a12', 'a13', 'a14', 'a21', 'a22', 'a23','a24', 'item_id2', 'c11','c12', 'c13', 'c14', 'c21', 'c22', 'c23','c24')
+  rote_test_experiment <- rote_test %>% filter(test == 'experiment') %>%
+    select('session_id','item_id1','a11','a12', 'a13', 'a14', 'a21', 'a22', 'a23','a24',
+           'item_id2', 'c11','c12', 'c13', 'c14', 'c21', 'c22', 'c23','c24')
   
   rote_test <- inner_join(rote_test_baseline, rote_test_experiment, by="session_id" )
   
   
   # remove rows with missing covariates
-  # covert age, remove outliers for age
-  rote_cov$age <- ifelse(as.numeric(as.character(rote_cov$age)) >100, NA, as.numeric(as.character(rote_cov$age)))
+  # convert age, remove outliers for age
+  suppressWarnings(
+    rote_cov$age <- ifelse(as.numeric(as.character(rote_cov$age)) > 100, 
+                           NA, as.numeric(as.character(rote_cov$age))))
   rote_cov <- rote_cov %>% drop_na("age")
   
   #fix gender
@@ -86,15 +90,8 @@ load_data = function(){
   rote_cov <- rote_cov[!duplicated(rote_cov$session_id),]
   
   #inner join 2 datasets
-  #dataset <- merge(rote_test, rote_cov, by="session_id")
-  
   dataset <- inner_join(rote_test, rote_cov, by="session_id" )
-  
-  #set date filter based on start time in test file
-  #dataset <- dataset %>% filter(session_start_time.x > as.POSIXct("2020-07-24 20:00:00", tz="UTC")) 
-  
-  #names(dataset)
-  
+
   dataset$treat <- dataset$treat.x
   dataset$cluster <- dataset$cluster.x
   dataset$gender <- as.factor(dataset$gender)
@@ -126,7 +123,8 @@ attrition = function() {
   summary(df3$completed)
   df3$treat = as.numeric(df3$treat)
   str(df3)
-  df3$completed = factor(df3$completed, levels=c("started", "covariates", "baseline", "completed"))
+  df3$completed = factor(df3$completed, 
+                         levels=c("started", "covariates", "baseline", "completed"))
   
   str(df3)
   n=218-171
@@ -139,9 +137,12 @@ attrition = function() {
 }
 
 print_stats = function() {
-  print(paste("After cleaning, the number of rows in our dataset is:", toString(nrow(dataset))))
-  print(paste("After cleaning, the number of observations in treatment is:", toString(sum(dataset$treat))))
-  print(paste("After cleaning, the number of observations in control is:", toString(nrow(dataset) - sum(dataset$treat))))
+  print(paste("After cleaning, the number of rows in our dataset is:", 
+              toString(nrow(dataset))))
+  print(paste("After cleaning, the number of observations in treatment is:", 
+              toString(sum(dataset$treat))))
+  print(paste("After cleaning, the number of observations in control is:", 
+              toString(nrow(dataset) - sum(dataset$treat))))
 }
 
 
@@ -170,7 +171,8 @@ result_regressions = function() {
 
 ```{r}
 cov_check_regression = function() {
-  glm(treat~age+gender+practice+reading+prior_knowledge, data=dataset, family=binomial(link="logit"))
+  glm(treat~age+gender+practice+reading+prior_knowledge, 
+      data=dataset, family=binomial(link="logit"))
 }
 ```
 
