@@ -272,6 +272,32 @@ https://drive.google.com/drive/folders/1t1wtW139ow35JUcuspJsWoYNjJzNNaK_?usp=sha
 ```{r child='code.Rmd'}
 ```
 
+## Alternative effect calculation
+
+```{r}
+library(plm)
+dataset = load_data_long()
+head(dataset)
+panel = pdata.frame(dataset, c("subject", "question"))
+model = plm(score ~ treat*question,
+            data = panel, model="random")
+summary(model)
+```
+
+```{r}
+model2 = glm(score ~ treat*question,
+            data=dataset, family=binomial(link="logit"))
+summary(model2)
+model3 = glm(score ~ treat*question+knowledge+age+gender+practice+reading,
+            data=dataset, family=binomial(link="logit"))
+summary(model3)
+```
+```{r}
+ggplot()+
+  geom_line(aes(x=question, y=score))
+```
+
+
 \pagebreak
 \centering
 &nbsp;  

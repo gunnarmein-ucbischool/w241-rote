@@ -102,7 +102,76 @@ load_data = function(){
            "prior_knowledge", "treat","reading", "practice")
   
 }
+```
 
+```{r}
+load_data_long = function(){
+  # import files
+  rote_cov_original <- read.csv(file="rote_cov.csv", sep=',') #covariates
+  rote_test_original <- read.csv(file="rote_test.csv", sep=',') #test file
+  
+  # create copies
+  rote_cov <- rote_cov_original
+  rote_test <- rote_test_original
+  
+  # remove rows with any NAs in the answers(indicates they did not complete the test)
+  rote_test <- rote_test %>% drop_na("a11", "a12", "a13", "a14", "a21", "a22", "a23","a24")
+  
+  # remove rows with missing covariates
+  # convert age, remove outliers for age
+  suppressWarnings(
+    rote_cov$age <- ifelse(as.numeric(as.character(rote_cov$age)) > 100, 
+                           NA, as.numeric(as.character(rote_cov$age))))
+  rote_cov <- rote_cov %>% drop_na("age")
+  
+  #fix gender
+  rote_cov$gender <- ifelse(rote_cov$gender == 'other', NA, rote_cov$gender)
+  
+  
+  # on test file, establish if testee answer matches actual answer. 
+  # if it matches, set var to 1, else 0. 
+  # notation will be o11, o12, etc (o is for outcome)
+  # x = baseline
+  # y = treatment
+  rote_test$o11 <- ifelse(rote_test$a11 == rote_test$c11, 1, 0)
+  rote_test$o12 <- ifelse(rote_test$a12 == rote_test$c12, 1, 0)
+  rote_test$o13 <- ifelse(rote_test$a13 == rote_test$c13, 1, 0)
+  rote_test$o14 <- ifelse(rote_test$a14 == rote_test$c14, 1, 0)
+  rote_test$o21 <- ifelse(rote_test$a21 == rote_test$c21, 1, 0)
+  rote_test$o22 <- ifelse(rote_test$a22 == rote_test$c22, 1, 0)
+  rote_test$o23 <- ifelse(rote_test$a23 == rote_test$c23, 1, 0)
+  rote_test$o24 <- ifelse(rote_test$a24 == rote_test$c24, 1, 0)
+  
+  rote_test = rote_test %>% 
+    gather(question, score, o11, o12, o13, o14, o21, o22, o23, o24) %>% 
+    mutate(question = as.integer(substr(question,2,3))) %>% 
+    mutate(item_id = ifelse(question >= 20, item_id2, item_id1)) %>% 
+    mutate(treat = as.integer(ifelse(treat == "false", 0 , 1))) %>% 
+    mutate(subject = session_id) %>% 
+    select(subject, cluster, treat, test, item_id, question, score) %>% 
+    distinct(subject, test, .keep_all = TRUE)
+
+  #on covariates file, sum knowledge scores together
+  rote_cov = rote_cov %>% 
+    mutate(subject = session_id) %>% 
+    mutate(gender = as.factor(ifelse(is.na(gender),2,gender-1))) %>% 
+    select(-cluster, -treat) %>% 
+    distinct(subject, .keep_all = TRUE)
+  
+  #inner join 2 datasets
+  dataset <- inner_join(rote_test, rote_cov, by="subject" )
+
+  dataset = dataset %>% 
+    mutate(knowledge = ifelse(item_id == item_id1, knowledge1, 0)) %>% 
+    mutate(knowledge = ifelse(item_id == item_id2, knowledge2, knowledge)) %>% 
+    mutate(knowledge = ifelse(item_id == item_id3, knowledge3, knowledge)) %>% 
+    mutate(knowledge = ifelse(item_id == item_id4, knowledge4, knowledge)) %>% 
+    mutate(question = item_id*100 + (question %% 10)) %>% 
+    mutate(treat = treat == 1 & test=="experiment") %>% 
+    select(subject, cluster, treat, age, gender, reading, practice, knowledge, question, score)
+
+  dataset
+}
 ```
 
 ```{r}
