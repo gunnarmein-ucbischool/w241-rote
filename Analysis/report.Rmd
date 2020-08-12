@@ -38,7 +38,7 @@ options(scipen=999)
 ## Background
 Rote memorization has a bad name in pedagogy, causing teachers to stay away from it and students to feel free to never practice it. However, in mathematics, physics, computer science, and other sciences, being able to recall certain snippets of knowledge quickly is imperative for both being able to perform calculations, for writing code in reasonable time, and to recognize patterns and form one’s own “grammatical ability” to formulate approaches. It isn’t really possible to imagine what a forest looks like, and how you would navigate it, until you can effortlessly recall what a tree is. Often, there are only a handful of vital concepts that a student needs to recall, but those they need to recall with absolutely no expenditure of time or doubt.
 
-Teachers have, at times, built little structured exercises into their curricula to help students remember such snippets. One technique is for the student to read the fact/formula/code in question so that they have a memory of seeing the thing, writing it down in their own hand (or typing it, but I prefer hand-writing for this) so they have a memory of writing it, and lastly saying it out loud multiple times so they have memory of saying it.
+Teachers have, at times, built little structured exercises into their curricula to help students remember such snippets. One technique is for the student to read the fact/formula/code in question so that they have a memory of seeing the thing, writing it down in their own words so they have a memory of writing it, and lastly saying it out loud multiple times so they have memory of saying it.
 
 This is all good and nice, but can we substantiate the validity of these techniques with an experiment? In other words, “is using multiple ways of remembering the same concept effective in aiding retention?” 
 
@@ -61,7 +61,7 @@ There were 2 portions of our test. The first portion was a “baseline” portio
 
 ![](flow.png)
 
-Subjects were randomly assigned 2 topics in both Part 1 and Part 2 from a pool of 8 questions ranging from topics from “Units for the Calorie Content of Food'' to the “History of the Submarine”. After reading each passage, they were given a video distraction and then given 4 multiple choice questions on what they had read. Screen shots are provided in the appendix with sample passages and questions that people were presented with
+Subjects were randomly assigned 2 topics in both Part 1 and Part 2 from a pool of 8 questions ranging from topics from “Units for the Calorie Content of Food'' to the “History of the Submarine”. After reading each passage, they were given a video distraction and then given 4 multiple choice questions on what they had read. Screen shots are provided in the appendix with sample passages and questions.
 
 ## Test subjects
 
@@ -228,6 +228,15 @@ result_regressions_alternate() # see output on next page
 
 Results are again on the next page. Using this approach, the ATET is now the interaction coefficient of 0.738 (0.333) for the simple model, and 0.766 (0.357) with all covariates. These results are significant at the 5% level. The interpretation of the ATET for this model is that of an odds-ratio: Odds of scoring a correct answer rose by `r round((exp(0.766)-1)*100,2)` % (covariate model). In the context of our experiment, think of this as (in a back-of-the-envelope calculation) raising an already high 80% probability of getting the correct answer, to about 90%. 
 
+## P-value through randomization inference
+
+We conduct a randomization inference under the sharp null-hypothesis of absolutely no effect to get another angle on how statistically sound our results might be. Out split of 47/50 was sufficiently close to even that we will use p = 0.5 for our assignment probabilities.
+
+```{r}
+plot_ri(0.766, 5000)
+```
+
+
 \pagebreak
 ## Discussion of experiment
 
@@ -279,6 +288,8 @@ Subjects scored well on our questions to begin with, there wasn't all that much 
 &nbsp;
 
 # Appendix
+
+\raggedright
 
 \pagebreak
 

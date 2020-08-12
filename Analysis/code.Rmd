@@ -474,4 +474,26 @@ plot_q_601 = function() {
     ggtitle("Answers for topic 6 question 1") +
     scale_x_discrete(limits=c("A", "B", "C*", "D", "E", "'Don't know'"))
 }
+
+plot_ri = function(ATET, n){
+  data = dataset_long
+  
+  experiment = function() {
+    data$treat = rbinom(nrow(data), 1, 0.5)
+  
+    model = glm(score ~ treat*test+question+knowledge+age+gender+practice+reading,
+                data=data, family=binomial(link="logit"))
+    abs(coeftest(model)["treat:testexperiment", "Estimate"])
+  }
+  ATETs = replicate(n, experiment())
+  d = data.frame(ATET=ATETs)
+  p = round(mean(ATETs > abs(ATET)),4)
+  d %>% ggplot()+
+    geom_histogram(aes(x=ATET), fill="#003262", binwidth=0.03)+
+    geom_vline(xintercept=0.766, color="#FDB515")+
+    xlab("ATET")+
+    ylab("Frequency")+
+    ggtitle(paste("P(|random ATET| > |observed ATET|) =",p))
+}
+
 ```
