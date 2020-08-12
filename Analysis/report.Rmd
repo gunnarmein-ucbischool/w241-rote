@@ -155,7 +155,7 @@ plot_qs()
 
 This is odd. We accept that some of our questions were harder than others, but a score of almost 0 for item 1 question 1 and item 3 question 1 is unlikely. Also, subjects in the treatment group had a harder time by far with item 6 question 1. 
 
-The first two items were analyzed and corrected (details are in the appendix):
+The first two items were analyzed and found incorrectly coded (details are in the appendix). Thankfully, our records include the actual answers, and so we could correct the scores:
 
 ```{r, fig.height=3}
 correct_data() # makes a secondary CSV  
