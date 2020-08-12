@@ -366,10 +366,14 @@ summary {
 </div>
 
 
-<pre class="r"><code>load_data = function(){
+<pre class="r"><code>load_data = function(corrected=FALSE){
   # import files
   rote_cov_original &lt;- read.csv(file=&quot;rote_cov.csv&quot;, sep=&#39;,&#39;) #covariates
-  rote_test_original &lt;- read.csv(file=&quot;rote_test.csv&quot;, sep=&#39;,&#39;) #test file
+  if (corrected) {
+    rote_test_original &lt;- read.csv(file=&quot;rote_test_corrected.csv&quot;, sep=&#39;,&#39;) #test file
+  } else {
+    rote_test_original &lt;- read.csv(file=&quot;rote_test.csv&quot;, sep=&#39;,&#39;) #test file
+  }
   
   # create copies
   rote_cov &lt;- rote_cov_original
@@ -459,9 +463,89 @@ summary {
 
   dataset &lt;- dataset %&gt;% 
     filter %&gt;% 
-    select(&quot;session_id&quot;, &quot;score&quot;, &quot;cluster&quot;, &quot;gender&quot;, &quot;age&quot;, 
+    select(&quot;session_id&quot;, &quot;score&quot;, &quot;score_pre&quot;, &quot;score_post&quot;, &quot;cluster&quot;, &quot;gender&quot;, &quot;age&quot;, 
            &quot;prior_knowledge&quot;, &quot;treat&quot;,&quot;reading&quot;, &quot;practice&quot;)
   
+}</code></pre>
+<pre class="r"><code>load_data_long = function(corrected=FALSE){
+ # import files
+  rote_cov_original &lt;- read.csv(file=&quot;rote_cov.csv&quot;, sep=&#39;,&#39;) #covariates
+  if (corrected) {
+    rote_test_original &lt;- read.csv(file=&quot;rote_test_corrected.csv&quot;, sep=&#39;,&#39;) #test file
+  } else {
+    rote_test_original &lt;- read.csv(file=&quot;rote_test.csv&quot;, sep=&#39;,&#39;) #test file
+  }
+  
+  # create copies
+  rote_cov &lt;- rote_cov_original
+  rote_test &lt;- rote_test_original
+  
+  # remove rows with any NAs in the answers(indicates they did not complete the test)
+  rote_test &lt;- rote_test %&gt;% drop_na(&quot;a11&quot;, &quot;a12&quot;, &quot;a13&quot;, &quot;a14&quot;, &quot;a21&quot;, &quot;a22&quot;, &quot;a23&quot;,&quot;a24&quot;)
+  
+  # remove rows with missing covariates
+  # convert age, remove outliers for age
+  suppressWarnings(
+    rote_cov$age &lt;- ifelse(as.numeric(as.character(rote_cov$age)) &gt; 100, 
+                           NA, as.numeric(as.character(rote_cov$age))))
+  rote_cov &lt;- rote_cov %&gt;% drop_na(&quot;age&quot;)
+  
+  #fix gender
+  rote_cov$gender &lt;- ifelse(rote_cov$gender == &#39;other&#39;, NA, rote_cov$gender)
+  
+  
+  # on test file, establish if testee answer matches actual answer. 
+  # if it matches, set var to 1, else 0. 
+  # notation will be o11, o12, etc (o is for outcome)
+  # x = baseline
+  # y = treatment
+  rote_test$o11 &lt;- ifelse(rote_test$a11 == rote_test$c11, 1, 0)
+  rote_test$o12 &lt;- ifelse(rote_test$a12 == rote_test$c12, 1, 0)
+  rote_test$o13 &lt;- ifelse(rote_test$a13 == rote_test$c13, 1, 0)
+  rote_test$o14 &lt;- ifelse(rote_test$a14 == rote_test$c14, 1, 0)
+  rote_test$o21 &lt;- ifelse(rote_test$a21 == rote_test$c21, 1, 0)
+  rote_test$o22 &lt;- ifelse(rote_test$a22 == rote_test$c22, 1, 0)
+  rote_test$o23 &lt;- ifelse(rote_test$a23 == rote_test$c23, 1, 0)
+  rote_test$o24 &lt;- ifelse(rote_test$a24 == rote_test$c24, 1, 0)
+  
+  # now flip to long form
+  rote_test = rote_test %&gt;% 
+    gather(&quot;question&quot;, &quot;score&quot;, o11:o24) %&gt;% 
+    mutate(question = as.integer(substr(question,2,3))) %&gt;% 
+    mutate(item_id = ifelse(question &gt;= 20, item_id2, item_id1)) %&gt;% 
+    mutate(treat = as.factor(ifelse(treat == &quot;false&quot;, 0 , 1))) %&gt;% 
+    mutate(subject = session_id) %&gt;% 
+    mutate(test = as.factor(test)) %&gt;% 
+    select(subject, test, item_id, question, score) %&gt;% 
+    distinct(subject, test, question, .keep_all = TRUE)
+
+  # massage covariates file
+  rote_cov = rote_cov %&gt;% 
+    mutate(subject = session_id) %&gt;% 
+    mutate(gender = as.factor(ifelse(is.na(gender),2,gender-1))) %&gt;% 
+    distinct(subject, .keep_all = TRUE)
+  #inner-join 2 datasets
+  dataset &lt;- inner_join(rote_test, rote_cov, by=&quot;subject&quot; )
+
+  
+  dataset = dataset %&gt;% 
+    mutate(knowledge = ifelse(item_id == item_id1, knowledge1, 0)) %&gt;% 
+    mutate(knowledge = ifelse(item_id == item_id2, knowledge2, knowledge)) %&gt;% 
+    mutate(knowledge = ifelse(item_id == item_id3, knowledge3, knowledge)) %&gt;% 
+    mutate(knowledge = ifelse(item_id == item_id4, knowledge4, knowledge)) %&gt;% 
+    mutate(question = as.factor(paste(item_id, &quot;-&quot;, as.character(question %% 10), sep=&quot;&quot;, collapse=NULL))) %&gt;% 
+    select(subject, cluster, treat, age, gender, reading, practice, knowledge, test, question, score)
+  dataset
+}</code></pre>
+<pre class="r"><code>correct_data = function(){
+  df = read.csv(file=&quot;rote_test.csv&quot;, sep=&#39;,&#39;) 
+
+    df[df$item_id1 == 1, &quot;c11&quot;] = 2
+  df[df$item_id2 == 1, &quot;c21&quot;] = 2
+  df[df$item_id1 == 3, &quot;c11&quot;] = 3
+  df[df$item_id2 == 3, &quot;c21&quot;] = 3
+  
+  write.csv(df, file=&quot;rote_test_corrected.csv&quot;)
 }</code></pre>
 <pre class="r"><code>attrition = function() {
   # todo: df3 is the dataset before covariates are joined, need to see how to reconstruct that
@@ -523,6 +607,24 @@ result_regressions = function() {
             se = list(sqrt(diag(clustered_errors1)),sqrt(diag(clustered_errors2))),
             star.cutoffs = c(0.05, 0.01, 0.001),
             title=&quot;Regression Results with Clustered Standard Errors&quot;)
+}
+
+result_regressions_alternate = function() {
+  regression1 = glm(score ~ treat*test,
+              data=dataset_long, family=binomial(link=&quot;logit&quot;))
+  regression2 = glm(score ~ treat*test+question+knowledge+age+gender+practice+reading,
+              data=dataset_long, family=binomial(link=&quot;logit&quot;))
+  clustered_errors1 &lt;- vcovCL_1c &lt;- vcovCL(regression1, cluster = dataset_long[ , &#39;cluster&#39;])
+  clustered_errors2 &lt;- vcovCL_2c &lt;- vcovCL(regression2, cluster = dataset_long[ , &#39;cluster&#39;])
+  stargazer(regression1, regression2, 
+            header = F, 
+            single.row=TRUE,
+            type = &quot;latex&quot;, 
+            omit.table.layout= &quot;n&quot;, 
+            keep.stat = c(&quot;adj.rsq&quot;, &quot;n&quot;, &quot;f&quot;, &quot;ser&quot;, &quot;aic&quot;, &quot;wald&quot;),
+            se = list(sqrt(diag(clustered_errors1)),sqrt(diag(clustered_errors2))),
+            star.cutoffs = c(0.05, 0.01, 0.001),
+            title=&quot;Alternate Regression Results with Clustered Standard Errors&quot;)
 }</code></pre>
 <pre class="r"><code>cov_check_regression = function() {
   glm(treat~age+gender+practice+reading+prior_knowledge, 
@@ -624,6 +726,7 @@ plot_score_diffs = function () {
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
                       labels=c(&quot;Control&quot;, &quot;Treatment&quot;))+
     ylab(&quot;Frequency&quot;) + 
+    xlab(&quot;Score&quot;)+
     ggtitle(&quot;Score differences&quot;) +
     theme(legend.title = element_blank())
 }
@@ -635,8 +738,37 @@ plot_score_diffs_smooth = function () {
     scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
                       labels=c(&quot;Control&quot;, &quot;Treatment&quot;))+
     ylab(&quot;Frequency&quot;) + 
+    xlab(&quot;Score&quot;)+
     ggtitle(&quot;Score differences&quot;) +
     theme(legend.title = element_blank())
+}
+
+plot_score_pre = function () {
+  dataset %&gt;% ggplot(aes(x=score_pre, fill=as.factor(treat)))+
+    geom_histogram(position=&quot;stack&quot;, binwidth=1) +
+    theme_minimal() +
+    scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
+                      labels=c(&quot;Control&quot;, &quot;Treatment&quot;))+
+    ylab(&quot;Frequency&quot;) + 
+    ggtitle(&quot;Pre-treatment scores&quot;) +
+    theme(legend.title = element_blank())
+}
+
+plot_score_post = function () {
+  dataset %&gt;% ggplot(aes(x=score_post, fill=as.factor(treat)))+
+    geom_histogram(position=&quot;stack&quot;, binwidth=1) +
+    theme_minimal() +
+    scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
+                      labels=c(&quot;Control&quot;, &quot;Treatment&quot;))+
+    ylab(&quot;Frequency&quot;) + 
+    ggtitle(&quot;Post-treatment scores&quot;) +
+    theme(legend.title = element_blank())
+}
+
+plot_scores = function() {
+  p1 = plot_score_pre()
+  p2 = plot_score_post()
+  ggarrange(p1, p2, nrow=1, ncol=2)
 }
 
 plot_diffs_all = function() {
@@ -680,6 +812,53 @@ plot_rand = function() {
   ggarrange(p1,p2,p3,p4,
             labels = c(&quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;D&quot;),
             ncol = 2, nrow = 2)
+}
+
+
+plot_rand_qs = function() {
+  dataset_long %&gt;% 
+    ggplot(aes(x=question, fill=treat))+
+    geom_bar(stat=&quot;count&quot;)+
+    scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
+                      labels=c(&quot;Control&quot;, &quot;Treatment&quot;))+
+    theme(axis.text.x = element_text(angle = 50, hjust = 1))+
+    labs(fill = &quot;Assignment&quot;)+
+    ylab(&quot;Count&quot;)+
+    xlab(&quot;Question&quot;)+
+    ggtitle(&quot;Randomization of topics&quot;)
+}
+
+plot_qs = function() {
+  dataset_long %&gt;% 
+    group_by(treat, question) %&gt;% 
+    summarise(m = mean(score), .groups=&quot;keep&quot;) %&gt;% 
+    ggplot(aes(x=question, y=m, fill=treat))+
+    geom_bar(stat=&quot;identity&quot;, position=&quot;dodge&quot;)+
+    scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
+                      labels=c(&quot;Control&quot;, &quot;Treatment&quot;))+
+    theme(axis.text.x = element_text(angle = 50, hjust = 1))+
+    labs(fill = &quot;Assignment&quot;)+
+    ylab(&quot;Average score&quot;)+
+    xlab(&quot;Question&quot;)+
+    ggtitle(&quot;Average scores by question&quot;)
+}
+
+plot_q_601 = function() {
+  df = read.csv(file=&quot;rote_test_corrected.csv&quot;, sep=&#39;,&#39;) 
+  df %&gt;% 
+    drop_na(a11, a21) %&gt;% 
+    filter(item_id1 == 6 | item_id2 == 6) %&gt;% 
+    mutate(answer = ifelse(item_id1 == 6, a11, a21)) %&gt;% 
+    ggplot(aes(x=as.numeric(answer), fill=treat))+
+    geom_histogram(position=&quot;stack&quot;, binwidth=1)+
+    stat_count()+
+    scale_fill_manual(values=c(&quot;#003262&quot;, &quot;#FDB515&quot;),
+                      labels=c(&quot;Control&quot;, &quot;Treatment&quot;))+
+    labs(fill = &quot;Assignment&quot;)+
+    ylab(&quot;Count&quot;)+
+    xlab(&quot;Answer&quot;)+
+    ggtitle(&quot;Answers for topic 6 question 1&quot;) +
+    scale_x_discrete(limits=c(&quot;A&quot;, &quot;B&quot;, &quot;C*&quot;, &quot;D&quot;, &quot;E&quot;, &quot;&#39;Don&#39;t know&#39;&quot;))
 }</code></pre>
 
 

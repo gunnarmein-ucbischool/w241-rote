@@ -5,6 +5,18 @@ output: html_document
 
 
 ```{r}
+library(dplyr)
+library(anytime)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+library(ggpubr)
+library(stargazer)
+library(sandwich)
+library(lmtest)
+library(png)
+library(grid)
+
 load_data = function(corrected=FALSE){
   # import files
   rote_cov_original <- read.csv(file="rote_cov.csv", sep=',') #covariates
@@ -106,9 +118,7 @@ load_data = function(corrected=FALSE){
            "prior_knowledge", "treat","reading", "practice")
   
 }
-```
 
-```{r}
 load_data_long = function(corrected=FALSE){
  # import files
   rote_cov_original <- read.csv(file="rote_cov.csv", sep=',') #covariates
@@ -179,60 +189,16 @@ load_data_long = function(corrected=FALSE){
     select(subject, cluster, treat, age, gender, reading, practice, knowledge, test, question, score)
   dataset
 }
-```
 
-```{r}
 correct_data = function(){
-  # import file
   df = read.csv(file="rote_test.csv", sep=',') 
-  print(unique(df[df$item_id1 == 1,"c11"]))
-  df[df$item_id1 == 1, "c11"] = 2
-  print(unique(df[df$item_id2 == 1,"c21"]))
+
+    df[df$item_id1 == 1, "c11"] = 2
   df[df$item_id2 == 1, "c21"] = 2
-  print(unique(df[df$item_id1 == 3,"c11"]))
   df[df$item_id1 == 3, "c11"] = 3
-  print(unique(df[df$item_id2 == 3,"c21"]))
   df[df$item_id2 == 3, "c21"] = 3
   
-  print(unique(df[df$item_id1 == 1,"c11"]))
-  print(unique(df[df$item_id2 == 1,"c21"]))
-  print(unique(df[df$item_id1 == 3,"c11"]))
-  print(unique(df[df$item_id2 == 3,"c21"]))
   write.csv(df, file="rote_test_corrected.csv")
-}
-```
-
-
-
-```{r}
-attrition = function() {
-  # todo: df3 is the dataset before covariates are joined, need to see how to reconstruct that
-  df2 = left_join(df_b, df_e, by='session_id')
-  nrow(df2)
-  df3 = left_join(df_cov, df2, by='session_id')
-  nrow(df3)
-  df3a= inner_join(df_b, df_e, by="session_id")
-  df_completed = inner_join(df_cov, df3a, by="session_id")
-  nrow(df_completed)
-
-  df3$completed = as.factor(ifelse(!is.na(df3$a11.y), "completed", 
-                                   ifelse(!is.na(df3$a11.x), "baseline", 
-                                          ifelse(!is.na(df3$treat), 
-                                                 "covariates", "started"))))
-  summary(df3$completed)
-  df3$treat = as.numeric(df3$treat)
-  str(df3)
-  df3$completed = factor(df3$completed, 
-                         levels=c("started", "covariates", "baseline", "completed"))
-  
-  str(df3)
-  n=218-171
-  df_started = data.frame(session_id = as.factor(1:n), treat=3, completed=factor("started"))
-  str(df_started)
-  df4 = full_join(df3, df_started, by="session_id")
-  str(df4)
-  df4$treat = ifelse(is.na(df4$treat.x), df4$treat.y.y, df4$treat.x)
-  df4$completed = as.factor(ifelse(is.na(df4$completed.x), df4$completed.y, df4$completed.x))
 }
 
 print_stats = function() {
@@ -266,16 +232,30 @@ result_regressions = function() {
             star.cutoffs = c(0.05, 0.01, 0.001),
             title="Regression Results with Clustered Standard Errors")
 }
-```
 
-```{r}
+result_regressions_alternate = function() {
+  regression1 = glm(score ~ treat*test,
+              data=dataset_long, family=binomial(link="logit"))
+  regression2 = glm(score ~ treat*test+question+knowledge+age+gender+practice+reading,
+              data=dataset_long, family=binomial(link="logit"))
+  clustered_errors1 <- vcovCL_1c <- vcovCL(regression1, cluster = dataset_long[ , 'cluster'])
+  clustered_errors2 <- vcovCL_2c <- vcovCL(regression2, cluster = dataset_long[ , 'cluster'])
+  stargazer(regression1, regression2, 
+            header = F, 
+            single.row=TRUE,
+            type = "latex", 
+            omit.table.layout= "n", 
+            keep.stat = c("adj.rsq", "n", "f", "ser", "aic", "wald"),
+            se = list(sqrt(diag(clustered_errors1)),sqrt(diag(clustered_errors2))),
+            star.cutoffs = c(0.05, 0.01, 0.001),
+            title="Alternate Regression Results with Clustered Standard Errors")
+}
+
 cov_check_regression = function() {
   glm(treat~age+gender+practice+reading+prior_knowledge, 
       data=dataset, family=binomial(link="logit"))
 }
-```
 
-```{r}
 
 plot_rand_gender = function (){
   dataset %>% ggplot()+
@@ -425,30 +405,17 @@ plot_diffs_all = function() {
 }
 
 plot_participation = function() {
-  df_a = data.frame(id=1:4,stage=c("started", "covariates", "baseline", "complete"),
+  df_a = data.frame(id=1:4,stage=c("Started", "Covariates", "Baseline test", "Second test"),
                     n=c(218, 171, 123, 108))
   df_a %>% ggplot(aes(x=stage, y=n, fill=stage))+
     geom_bar(stat="identity") +
     theme_minimal() +
-    scale_x_discrete(limits=c("started", "covariates", "baseline", "complete")) +
+    scale_x_discrete(limits=c("Started", "Covariates", "Baseline test", "Second test")) +
     scale_fill_manual(values=c("#003262", "#3B7EA1", "#FDB515", "#C4820E"))+
-    ylab("Participants") + 
-    ggtitle("Participation by stage") 
-}
-
-plot_attrition = function () {
-  df4 %>% 
-    filter(completed != 4) %>% 
-    ggplot(aes(x=completed, fill=as.factor(treat)))+
-    geom_histogram(stat="count") +
-    theme_minimal() +
-    scale_x_discrete(labels=c("started", "covariates", "baseline", "complete")) +
-    scale_fill_brewer(palette="Dark2") +
-    scale_fill_manual(values=c("#003262", "#3B7EA1", "#FDB515", "#C4820E"),
-                      labels=c("Control", "Treatment", "Before assignment"))+
-    ylab("Participants dropping out") +
-    ggtitle("Attrition by stage")  +
-    theme(legend.title=element_blank())
+    ylab("Participants") +
+    xlab("Completed stage")+
+    theme(legend.position="none")+
+    ggtitle("Participation by completed stage") 
 }
 
 plot_rand = function() {
@@ -508,8 +475,3 @@ plot_q_601 = function() {
     scale_x_discrete(limits=c("A", "B", "C*", "D", "E", "'Don't know'"))
 }
 ```
-
-```{r}
-
-```
-

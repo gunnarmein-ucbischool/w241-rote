@@ -75,7 +75,7 @@ The format of our experiment was a multiple choice test. Study participants woul
 
 ## Randomization process
 
-Participants were assigned to "control" and "treatment" group randomly. The software did this right after covariates were gathered. In anticipation of collusion between students, we decided to cluster by time slot, in 5-minute increments. In hindsight, this was not necessary given our randomized draw from a question bank which made spillover effects unlikely, but it also did not hurt our process or errors too much. Students by-and-large took the tests in different time slots.
+Participants were assigned to "control" and "treatment" groups randomly. The software did this right after covariates were gathered. In anticipation of collusion between students, we decided to cluster by time slot, in 5-minute increments. In hindsight, this was not necessary given our randomized draw from a question bank which made spillover effects unlikely, but it also did not hurt our process or errors too much. Students by-and-large took the tests in different time slots.
 
 ## Pre-treatment-phase content and test
 
@@ -92,8 +92,6 @@ Prior to conducting our experiment, we used a ballpark estimate in order to esti
 We estimated an effect size of getting on average one additional question right between treatment and control. With the experiment parameters of 0.05 and power calculation of .8, we estimated that we would need roughly 21 samples per group. 
 
 In retrospect, this back of the envelope calculation was not extremely helpful. We would have benefited greatly from a pretest, however, due to a software bug, we were unable to properly assess the results of our pretest. In retrospect, our estimated effect size was far too high. People generally were able to score quite well on the exam regardless of if they were in treatment or control.
-
-todo: how much power did we actually have?
 
 \pagebreak
 # Analysis of results
@@ -115,12 +113,13 @@ stargazer(dataset, header=FALSE)
 
 At the end of the experiment, we had `r nrow(dataset[dataset$treat==0,])` subjects in control and `r nrow(dataset[dataset$treat==1,])` in treatment. 
 
-```{r EDA, echo=FALSE, warning=FALSE}
+```{r EDA, echo=FALSE, warning=FALSE, fig.height=3}
 plot_age()
 ```
 
 In the age distribution of only people who completed the whole experiment, we can see a group of Eastside Prepartory School students under the age of 20, a female-leaning cluster of certain Facebook friends over the age of 50, and a mixed group of other social media recruits between those groups. Gender balance does not look bad. 
 
+\pagebreak
 ## Randomization checks
 
 ### Check by regression
@@ -130,38 +129,42 @@ We used 2 methods to validate the randomization process worked. The first method
 ```{r, echo=FALSE, results='asis'}
 stargazer(cov_check_regression(), header=FALSE)
 ```
-
+\pagebreak
 ### Visual check
 
 The second method of validating randomization is to look at the distribution of control versus treatment assignment over participants’ age, gender, self-reported memorization skill, and self-reported reading skill. As shown in the graphs below, the distribution of control versus treatment assignment are fairly even among all the participant groups. Therefore, we validated the randomization worked.
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.height=4}
 plot_rand()
 ```
 
 Did our question banks get randomized adequately? From a quick visual check, yes:
 
-```{r}
+```{r fig.height=3}
 plot_rand_qs()
 ```
 
+\pagebreak
+## Scoring review
+
 Were some questions harder than others?
 
-```{r}
+```{r, fig.height=3}
 plot_qs()
 ```
 
 This is odd. We accept that some of our questions were harder than others, but a score of almost 0 for item 1 question 1 and item 3 question 1 is unlikely. Also, subjects in the treatment group had a harder time by far with item 6 question 1. 
 
-The first two items we analyzed and corrected (details are in the appendix), here is the corrected data:
+The first two items were analyzed and corrected (details are in the appendix):
 
-```{r}
+```{r, fig.height=3}
 correct_data() # makes a secondary CSV  
 dataset = load_data(TRUE)
 dataset_long = load_data_long(TRUE)
 plot_qs()
 ```
 
+\pagebreak
 Topic number 6 question 1 is also discussed in the appendix. Compared to the other two, this one seems to simply have been a difficult question. Here is the distribution of answers:
 
 ```{r}
@@ -170,9 +173,13 @@ plot_q_601()
 
 The correct answer was indeed the most frequent, so there is no real reason to doubt this data point. 
 
-### Glance at score distribution
+The rest of this report uses the corrected data. 
 
-As part of our EDA, we take a look at the distribution of differential (post-pre) scores between treatment and control:
+\pagebreak
+
+## Glance at score distribution
+
+As part of our EDA, we take a look at the distribution of differential (post-pre) scores between treatment and control. This is recorded in the variable `dataset`, in which we computed the differences in total scores between pre-tests and post-tests as the outcome:
 
 ```{r echo=FALSE}
 plot_diffs_all()
@@ -182,25 +189,64 @@ We can see the distribution shifted to the positive in the treatment group, by a
 
 ## Effect calculation
 
-As discussed above, one primary method of effect calculation for us was looking at the differences between pre- and post-treatment-phase scores. In this spirit, we now regress that difference on (1) only the treatment indicator `treat` and (2) on the treatment indicator along with a number of covariates to compute the ATET:
+As discussed above, one primary method of effect calculation for us was looking at the differences between pre- and post-treatment-phase scores. In this spirit, we now compute the ATET throguh a regression of the difference on (1) only the treatment indicator `treat`:
 
-```{r, results='asis'}
-result_regressions()
+$$
+y_{scoredelta} = \beta_0 +\beta_1(treat)
+$$
+
+and (2) on the treatment indicator along with a number of covariates:
+
+$$
+\begin{aligned}
+\Delta score = &\beta_0 + \beta_1(treat) + \beta_2 (age) + \beta_3 (priorknowledge) \\
+&+ \beta_4 (reading) + \beta_5(gender) + \beta_6(practice)
+\end{aligned}
+$$
+
+```{r, results='asis', echo=FALSE}
+result_regressions() # see output on next page
 ```
 
-Disappointingly, the inclusion of covariates did nothing to reduce our (cluster-robust) standard errors for the ATET. 
+The results are on the next page. The ATET of 0.5170 (0.331) for the simple model just misses statistically significance. In an earlier version of the results (slide deck), before the mis-coded results for topics 1 and 3 were discovered, the ATET was significant at the 5% level. Disappointingly, the inclusion of covariates did nothing to push the ATET of ATET 0.572 (0.346) over the significance level. Standard errors are cluster-robust.
 
-todo: alternate calculation of treatment effect by panel?
+## Alternative effect calculation
 
+An alternative computation of effect was suggested by Prof. Reiley in the review of our results. Here, we use `dataset_long` in which we made an individual data point (row) for each answer for each test and subject. As a result, our outcome variable is now the probability of getting a correct score. This approach allows us to correlate prior knowledge and topics in a fine-grained way, and also correctly controls for questions of varying difficulty. Treatment is interacted on "test", which is the phase indicator (baseline/experiment):
+
+$$
+\begin{aligned}
+logit(p_{correct}) = &\beta_0 + \beta_1 (treat) + \beta_2(test)+\beta_3(treat:test) \\ 
+&+\beta_4 (age) + \beta_5 (priorknowledge) + \beta_6 (reading) \\
+&+ \beta_6(gender) + \beta_7(practice)
+\end{aligned}
+$$
+
+```{r, results='asis', echo=FALSE}
+result_regressions_alternate() # see output on next page
+```
+
+Results are again on the next page. Using this approach, the ATET is now the interaction coefficient of 0.738 (0.333) for the simple model, and 0.766 (0.357) with all covariates. These results are significant at the 5% level. The interpretation of the ATET for this model is that of an odds-ratio: Odds of scoring a correct answer rose by `r round((exp(0.766)-1)*100,2)` % (covariate model). In the context of our experiment, think of this as (in a back-of-the-envelope calculation) raising an already high 80% probability of getting the correct answer, to about 90%. 
+
+\pagebreak
 ## Discussion of experiment
 
 ### Attrition
 
-todo
+We faced an attrition issue in this experiment: 22% of participants dropped between pressing “start” and submitting covariates, a further 28% of the remaining participants dropped between submitting covariates and completing the first part of the test. 37% of participants dropped between submitting covariates and the end of the test:
 
+```{r}
+plot_participation()
+```
+
+Potential reasons for attrition include: The test took a little over 10 minutes which is too long for voluntary participants, the content of the passages were not interesting to the participants, and technical difficulties such as the website is not compatible with mobile users, and pressing the “go back” button on browser will confuse the server logic and disqualify the test.
+
+From our covariate balance check earlier, which was done using only subject which had completed the whole experiment, we have no indication to be worried about an attrition imbalance between treatment and control. Asymmetries in covariates across attrition stages are possible, but since this is not a long-term study and we are not comparing results between potentially different groups, the level of attrition only hurts our generalizability. Subjects of different abilities - or other varying attributes - might have dropped off before the actual test, meaning our sample set might not reflect any relaistic slice of any general population.
+
+\pagebreak
 ### Calibration of questions / general scoring
 
-A look at the pre- and post-treatment scores is instructive:
+A look at the pre- and post-treatment scores for only the treatment group is instructive:
 
 ```{r}
 plot_scores()
@@ -208,15 +254,15 @@ plot_scores()
 
 Subjects scored well on our questions to begin with, there wasn't all that much room for improvement. This suggests that our content was too easy to memorize, or that our multiple-choice questions were too easy to answer. 
 
+\pagebreak
 ## Suggestions for future experiments
 
-todo: expand
-
-- Longer, bug-free pre-study
-- Captive audience
-- Harder questions
-- Shorter content
-- Hard-coded page flow
+- Pre-study: Extend pre-study to around 2 to 3 weeks so we can collect enough results for better estimation of expected effect size for power calculation. We were unable to do this in the experiment because of the time constraints and discovering testing website code error in the later stage of pre-study.
+- Increase test question difficulty level: We found that regardless of treatment or control, people were generally able to score pretty well in the questions we posed them. We believe that a longer pre-study period would allow for future experimenters to better assess question difficulty and adjust accordingly.
+- Shorter content: Some of the memorization questions were longer than others in some cases, and we received feedback from study participants that the study was too long. This was also reflected within the attrition in our survey. We suggest that future experiments take into consideration how difficult the memorization task actually is.
+- Hard-code page flow: Given the time and resource constraint of this experiment, the testing website cannot record and display correctly if the participants press the “go back” button on the browser. Ironically, this is partly because we made a very serious effort to track where the user is in the process, and to react correctly to "back arrow" events. However, a couple of years ago, the authors of Google Chrome decided to make the back arrow to do precisely what the users expect it to do, and implemented a quite extraordinary level of machinery to ensure that the server *cannot* detect whether someone did this. It might be possible to implement a more robust server logic, but it seemed improbable and was certainly not possible given the time line we were on. A simpler website with more hard-coding of logic into the HTML/JS client side of the logic might prove to be more robust. 
+- Conduct this experiment in a supervised room: Having participants take this study in a monitored room setting for 10 minutes can minimize the potential collaboration which results in inflated or inaccurate test scores. Having participants in a room can also prevent attrition.
+- Random order of baseline and treatment passages: Current design of the treatment group displays baseline passage in part one of the test and treatment passage in part two of the test. Because reading and memorization require mental concentration, a potential concern of the current design is that participants might lose attention when they are in part two of the test. Therefore randomizing the order of baseline and treatment passage will remove the effect of concentration level on test results.
 
 \pagebreak
 \centering
@@ -247,6 +293,14 @@ The repository is available at https://github.com/gunnarmein-ucbischool/w241-rot
 ```{r, out.height = "400px", echo=FALSE}
 knitr::include_graphics("code_struct.png")
 ```
+
+## Logs
+
+The general operations log, covariates log, written submissions log, and test results log can be viewed at:
+
+https://drive.google.com/drive/folders/1t1wtW139ow35JUcuspJsWoYNjJzNNaK_?usp=sharing 
+
+It can also be found in the "analysis" folder of the GitHub repo.
 
 \pagebreak
 
@@ -306,32 +360,8 @@ knitr::include_graphics("test.png")
 knitr::include_graphics("feedback.png")
 ```
 
-## Logs
-
-The general operations log, covariates log, written submissions log, and test results log can be viewed at:
-
-https://drive.google.com/drive/folders/1t1wtW139ow35JUcuspJsWoYNjJzNNaK_?usp=sharing 
-
-## Full analysis code
-
-```{r child='code.Rmd'}
-```
-
-## Alternative effect calculation
-
-```{r}
-```
-
-```{r}
-model2 = glm(score ~ treat,
-            data=dataset_long, family=binomial(link="logit"))
-summary(model2)
-model3 = glm(score ~ treat*question+knowledge+age+gender+practice+reading,
-            data=dataset_long, family=binomial(link="logit"))
-summary(model3)
-```
-
-## Correctness of item 1 question 1 and item 3 question 1
+\pagebreak
+## Investigation of low-scoring questions
 
 ### Topic 1: "The Baroque Period", time limit 150 s
 
@@ -419,6 +449,11 @@ The real breakthrough, and the birth of the modern submarine, came courtesy of J
 
 The correct answer was marked in our content file as "C", and as one can see from the text, this is indeed the correct answer. However, it is a more subtle question than others in our content set. 
 
+\pagebreak
+## Full code for wrangling, analysis and graphs
+
+```{r child='code.Rmd'}
+```
 
 \pagebreak
 \centering
