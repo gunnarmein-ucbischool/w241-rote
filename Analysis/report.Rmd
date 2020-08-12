@@ -104,8 +104,7 @@ We ended the experiment at a time we set several days in advance, after discussi
 
 ```{r data_preprocessing, message=FALSE}
 dataset = load_data()
-dataset_control <- dataset %>% filter(treat == 0)
-dataset_treat <- dataset %>% filter(treat == 1)
+dataset_long = load_data_long()
 ```
 
 ## EDA
@@ -139,6 +138,37 @@ The second method of validating randomization is to look at the distribution of 
 ```{r echo=FALSE}
 plot_rand()
 ```
+
+Did our question banks get randomized adequately? From a quick visual check, yes:
+
+```{r}
+plot_rand_qs()
+```
+
+Were some questions harder than others?
+
+```{r}
+plot_qs()
+```
+
+This is odd. We accept that some of our questions were harder than others, but a score of almost 0 for item 1 question 1 and item 3 question 1 is unlikely. Also, subjects in the treatment group had a harder time by far with item 6 question 1. 
+
+The first two items we analyzed and corrected (details are in the appendix), here is the corrected data:
+
+```{r}
+correct_data() # makes a secondary CSV  
+dataset = load_data(TRUE)
+dataset_long = load_data_long(TRUE)
+plot_qs()
+```
+
+Topic number 6 question 1 is also discussed in the appendix. Compared to the other two, this one seems to simply have been a difficult question. Here is the distribution of answers:
+
+```{r}
+plot_q_601()
+```
+
+The correct answer was indeed the most frequent, so there is no real reason to doubt this data point. 
 
 ### Glance at score distribution
 
@@ -189,7 +219,22 @@ todo: expand
 - Hard-coded page flow
 
 \pagebreak
+\centering
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;
+
 # Appendix
+
+\pagebreak
 
 ## Code structure
 
@@ -275,27 +320,104 @@ https://drive.google.com/drive/folders/1t1wtW139ow35JUcuspJsWoYNjJzNNaK_?usp=sha
 ## Alternative effect calculation
 
 ```{r}
-library(plm)
-dataset = load_data_long()
-head(dataset)
-panel = pdata.frame(dataset, c("subject", "question"))
-model = plm(score ~ treat*question,
-            data = panel, model="random")
-summary(model)
 ```
 
 ```{r}
-model2 = glm(score ~ treat*question,
-            data=dataset, family=binomial(link="logit"))
+model2 = glm(score ~ treat,
+            data=dataset_long, family=binomial(link="logit"))
 summary(model2)
 model3 = glm(score ~ treat*question+knowledge+age+gender+practice+reading,
-            data=dataset, family=binomial(link="logit"))
+            data=dataset_long, family=binomial(link="logit"))
 summary(model3)
 ```
-```{r}
-ggplot()+
-  geom_line(aes(x=question, y=score))
-```
+
+## Correctness of item 1 question 1 and item 3 question 1
+
+### Topic 1: "The Baroque Period", time limit 150 s
+
+The Baroque period was anticipated before 1600, although that date remains as a convenient marker for the start of the period. It is a period of dramatic expression, of a vigorous, highly ornamented art. An era of absolute monarchies, each court had its own group of musicians, both vocal and instrumental.
+**The Doctrine of Affections of the Baroque relates to the portrayal of emotions through music.** A recognized musical vocabulary expressed certain emotions. Within this overall context, composers used musical techniques to vividly describe the meaning of the words. Rising passages are found at words such as ""resurrection,"" ""heaven,"" etc. Descending passages were used for such phrases as ""to the depths"" and ""descended into hell.""
+It was also a period of scientific discovery and reasoning. New findings in the sciences were vitally important to knowledge on the continent. Although we are usually concerned with Baroque music of the continent, it was during this period that the settlement of the New World began.
+Rhythmic energy, coupled with a strong melodic thrust, makes performances of Baroque music appealing and satisfying to musicians, both amateur and professional.
+
+Characteristics of Baroque choral music include:
+
+1. Vertical structure rather than linear
+2. Major-minor tonality established
+3. Figured bass
+4. Outer voice polarity—soprano melody over a figured bass
+5. New counterpoint—subordinate to the harmony
+6. Concertato style important
+7. Terraced dynamics
+8. Instruments influenced texture
+9. Form determined by musical considerations
+10. Doctrine of Affections
+11. Virtuosity and improvisation are important elements
+12. Steady pulsating rhythm—barlines introduced
+
+Although 1600 is generally acknowledged as the beginning of the Baroque period, Renaissance characteristics are found long after that. The two styles, stile antico and stile moderno existed side by side, particularly in the early Baroque. Composers often wrote in both styles; consequently, a conductor must look beyond the name and dates of a composer to determine the style of the music.
+
+#### Question 1
+
+"Based on the article, what does the ""Doctrine of Affections"" relate to?"
+
+- A: Love and empathy
+- B: portrayal of emotions through music
+- C: scientific reasoning
+- D: Strong Melodic thrusts
+- E: None of the above
+
+The answer marked correct in content file is "E: None of the above". However, reading the text quickly reveals that "B" should have been marked as correct instead.
+
+### Topic 3 - "Famous potions from Harry Potter", time limit 130s
+
+Below are some famous potions from the series Harry Potter:
+
+Felix Felicis/Liquid Luck
+Felix Felicis, more commonly known as Liquid Luck, grants whoever drinks it unusually good luck. The time span of this luck depends on the amount imbibed. 
+
+Pepperup Potion
+A Pepperup Potion is designed to improve health, relieve coughs and colds, though it does have **one major side effect: It causes steam to dribble from the patient's ears** for several hours afterward. It is also used to quickly elevate body temperature, as shown after the second task in Harry Potter and the Goblet of Fire and mentioned in Harry Potter and the Chamber of Secrets.
+
+Polyjuice Potion
+The Polyjuice Potion allows the drinker to assume the appearance of someone else for an hour or more depending on the quantity. The potion only causes a physical and voice transformation of the drinker, but clothing is not affected. Its ingredients include fluxweed, knotgrass, lacewing flies, leeches, powdered Bicorn horn, and shredded Boomslang skin. The final component is a bit of the individual to be impersonated; strands of hair are most often used for this purpose.
+
+Skele-Gro
+Skele-Gro is a medicinal potion that can regrow missing or removed bones, though it tastes terrible and the process is very slow and extremely painful. In Chamber of Secrets, a bewitched Bludger breaks Harry's arm while he plays Quidditch, and Gilderoy Lockhart, the incompetent Defence Against the Dark Arts teacher, accidentally removes his bones instead of mending them. As a result, Harry takes a dose of the potion and spends the night in the hospital wing.
+
+Veritaserum
+Veritaserum is a very powerful truth potion. The name ""Veritaserum"" derives from the Latin word Veritas, meaning truth. Three drops of this potion are all that is needed to force anyone to respond to any question with the truth.
+
+#### Question 1
+
+"Which of the following is a side effect from the Pepperup Potion?"
+
+- A: Causes snot to dribble from the nose
+- B: Causes you to be really energetic
+- C: Causes steam to dribble out the ears
+- D: Gives you indigestion
+- E: None of the above
+
+The answer marked as correct in our content file is once again "E: None of the above". Instead, "C" should have been marked as correct.
+
+### Topic 6: "History of the Submarine", time limit 70 s
+
+The submarine's origins trace back as far as 332 B.C., when it was said that Alexander the Great was lowered into the ocean inside a glass barrel so he could study the life of fish. This concept was then pushed aside until it reappeared again in 1578 in a publication called Inventions or Devises, written by William Bourne. Bourne described the idea of submerging a boat by altering its volume.
+Around 1620, Cornelis Jacobszoon Drebbel, a Dutch engineer, covered a rowboat in greased leather. A dozen oarsmen row beneath the surface of the Thames, breathing through snorkel tubes. He named his boat Drebbel I, and it is considered by many to have been the first functioning submarine.
+In 1863, the French Plongeur ('Diver') which was powered by engines run on compressed air, became the first submarine that did not rely on human propulsion for momentum.
+The real breakthrough, and the birth of the modern submarine, came courtesy of John Phillip Holland, towards the end of the 19th century. He became the first designer to successfully unite three new pieces of technology - the electric motor, the electric battery, and the internal combustion engine - to create the first recognizably modern submarine, USS Holland. Submarines were first widely used during World War I, and are now used in many navies large and small.
+
+#### Question 1
+
+"Which submarine was the first recognizably modern submarine?"
+
+- A: Drebbel I
+- B: Plongeur ('Diver')
+- C: USS Holland
+- D: Nautilus
+- E: None of the above
+
+The correct answer was marked in our content file as "C", and as one can see from the text, this is indeed the correct answer. However, it is a more subtle question than others in our content set. 
 
 
 \pagebreak

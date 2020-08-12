@@ -5,10 +5,14 @@ output: html_document
 
 
 ```{r}
-load_data = function(){
+load_data = function(corrected=FALSE){
   # import files
   rote_cov_original <- read.csv(file="rote_cov.csv", sep=',') #covariates
-  rote_test_original <- read.csv(file="rote_test.csv", sep=',') #test file
+  if (corrected) {
+    rote_test_original <- read.csv(file="rote_test_corrected.csv", sep=',') #test file
+  } else {
+    rote_test_original <- read.csv(file="rote_test.csv", sep=',') #test file
+  }
   
   # create copies
   rote_cov <- rote_cov_original
@@ -105,10 +109,14 @@ load_data = function(){
 ```
 
 ```{r}
-load_data_long = function(){
-  # import files
+load_data_long = function(corrected=FALSE){
+ # import files
   rote_cov_original <- read.csv(file="rote_cov.csv", sep=',') #covariates
-  rote_test_original <- read.csv(file="rote_test.csv", sep=',') #test file
+  if (corrected) {
+    rote_test_original <- read.csv(file="rote_test_corrected.csv", sep=',') #test file
+  } else {
+    rote_test_original <- read.csv(file="rote_test.csv", sep=',') #test file
+  }
   
   # create copies
   rote_cov <- rote_cov_original
@@ -142,37 +150,59 @@ load_data_long = function(){
   rote_test$o23 <- ifelse(rote_test$a23 == rote_test$c23, 1, 0)
   rote_test$o24 <- ifelse(rote_test$a24 == rote_test$c24, 1, 0)
   
+  # now flip to long form
   rote_test = rote_test %>% 
-    gather(question, score, o11, o12, o13, o14, o21, o22, o23, o24) %>% 
+    gather("question", "score", o11:o24) %>% 
     mutate(question = as.integer(substr(question,2,3))) %>% 
     mutate(item_id = ifelse(question >= 20, item_id2, item_id1)) %>% 
-    mutate(treat = as.integer(ifelse(treat == "false", 0 , 1))) %>% 
+    mutate(treat = as.factor(ifelse(treat == "false", 0 , 1))) %>% 
     mutate(subject = session_id) %>% 
-    select(subject, cluster, treat, test, item_id, question, score) %>% 
-    distinct(subject, test, .keep_all = TRUE)
+    mutate(test = as.factor(test)) %>% 
+    select(subject, test, item_id, question, score) %>% 
+    distinct(subject, test, question, .keep_all = TRUE)
 
-  #on covariates file, sum knowledge scores together
+  # massage covariates file
   rote_cov = rote_cov %>% 
     mutate(subject = session_id) %>% 
     mutate(gender = as.factor(ifelse(is.na(gender),2,gender-1))) %>% 
-    select(-cluster, -treat) %>% 
     distinct(subject, .keep_all = TRUE)
-  
-  #inner join 2 datasets
+  #inner-join 2 datasets
   dataset <- inner_join(rote_test, rote_cov, by="subject" )
 
+  
   dataset = dataset %>% 
     mutate(knowledge = ifelse(item_id == item_id1, knowledge1, 0)) %>% 
     mutate(knowledge = ifelse(item_id == item_id2, knowledge2, knowledge)) %>% 
     mutate(knowledge = ifelse(item_id == item_id3, knowledge3, knowledge)) %>% 
     mutate(knowledge = ifelse(item_id == item_id4, knowledge4, knowledge)) %>% 
-    mutate(question = item_id*100 + (question %% 10)) %>% 
-    mutate(treat = treat == 1 & test=="experiment") %>% 
-    select(subject, cluster, treat, age, gender, reading, practice, knowledge, question, score)
-
+    mutate(question = as.factor(paste(item_id, "-", as.character(question %% 10), sep="", collapse=NULL))) %>% 
+    select(subject, cluster, treat, age, gender, reading, practice, knowledge, test, question, score)
   dataset
 }
 ```
+
+```{r}
+correct_data = function(){
+  # import file
+  df = read.csv(file="rote_test.csv", sep=',') 
+  print(unique(df[df$item_id1 == 1,"c11"]))
+  df[df$item_id1 == 1, "c11"] = 2
+  print(unique(df[df$item_id2 == 1,"c21"]))
+  df[df$item_id2 == 1, "c21"] = 2
+  print(unique(df[df$item_id1 == 3,"c11"]))
+  df[df$item_id1 == 3, "c11"] = 3
+  print(unique(df[df$item_id2 == 3,"c21"]))
+  df[df$item_id2 == 3, "c21"] = 3
+  
+  print(unique(df[df$item_id1 == 1,"c11"]))
+  print(unique(df[df$item_id2 == 1,"c21"]))
+  print(unique(df[df$item_id1 == 3,"c11"]))
+  print(unique(df[df$item_id2 == 3,"c21"]))
+  write.csv(df, file="rote_test_corrected.csv")
+}
+```
+
+
 
 ```{r}
 attrition = function() {
@@ -343,6 +373,7 @@ plot_score_diffs = function () {
     scale_fill_manual(values=c("#003262", "#FDB515"),
                       labels=c("Control", "Treatment"))+
     ylab("Frequency") + 
+    xlab("Score")+
     ggtitle("Score differences") +
     theme(legend.title = element_blank())
 }
@@ -354,6 +385,7 @@ plot_score_diffs_smooth = function () {
     scale_fill_manual(values=c("#003262", "#FDB515"),
                       labels=c("Control", "Treatment"))+
     ylab("Frequency") + 
+    xlab("Score")+
     ggtitle("Score differences") +
     theme(legend.title = element_blank())
 }
@@ -429,6 +461,55 @@ plot_rand = function() {
             ncol = 2, nrow = 2)
 }
 
+
+plot_rand_qs = function() {
+  dataset_long %>% 
+    ggplot(aes(x=question, fill=treat))+
+    geom_bar(stat="count")+
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    theme(axis.text.x = element_text(angle = 50, hjust = 1))+
+    labs(fill = "Assignment")+
+    ylab("Count")+
+    xlab("Question")+
+    ggtitle("Randomization of topics")
+}
+
+plot_qs = function() {
+  dataset_long %>% 
+    group_by(treat, question) %>% 
+    summarise(m = mean(score), .groups="keep") %>% 
+    ggplot(aes(x=question, y=m, fill=treat))+
+    geom_bar(stat="identity", position="dodge")+
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    theme(axis.text.x = element_text(angle = 50, hjust = 1))+
+    labs(fill = "Assignment")+
+    ylab("Average score")+
+    xlab("Question")+
+    ggtitle("Average scores by question")
+}
+
+plot_q_601 = function() {
+  df = read.csv(file="rote_test_corrected.csv", sep=',') 
+  df %>% 
+    drop_na(a11, a21) %>% 
+    filter(item_id1 == 6 | item_id2 == 6) %>% 
+    mutate(answer = ifelse(item_id1 == 6, a11, a21)) %>% 
+    ggplot(aes(x=as.numeric(answer), fill=treat))+
+    geom_histogram(position="stack", binwidth=1)+
+    stat_count()+
+    scale_fill_manual(values=c("#003262", "#FDB515"),
+                      labels=c("Control", "Treatment"))+
+    labs(fill = "Assignment")+
+    ylab("Count")+
+    xlab("Answer")+
+    ggtitle("Answers for topic 6 question 1") +
+    scale_x_discrete(limits=c("A", "B", "C*", "D", "E", "'Don't know'"))
+}
 ```
 
+```{r}
+
+```
 
