@@ -59,8 +59,9 @@ load_data = function(corrected=FALSE){
   rote_cov <- rote_cov %>% drop_na("age")
   
   #fix gender
-  rote_cov$gender <- ifelse(rote_cov$gender == 'other', NA, rote_cov$gender)
-  
+  rote_cov$gender = as.character(rote_cov$gender)
+  rote_cov$gender <- replace_na(rote_cov$gender, 'not stated')
+  rote_cov$gender <- factor(rote_cov$gender, levels=c("F", "M", "other", "not stated"))
   
   # on test file, establish if testee answer matches actual answer. 
   # if it matches, set var to 1, else 0. 
@@ -334,13 +335,13 @@ plot_gender = function() {
 }
 
 plot_age = function() {
-dataset %>% ggplot(aes(x=age, fill=gender))+
+dataset %>% ggplot(aes(x=age, fill=as.factor(gender)))+
     geom_bar(position="stack") +
     stat_count()+
     theme_minimal() +
     #scale_fill_brewer(palette="Dark2") +
-    scale_fill_manual(values=c("#003262", "#FDB515", "#C4820E"),
-                      labels=c("Female", "Male", "Other"))+
+    scale_fill_manual(values=c("#003262", "#FDB515",  "#3B7EA1", "#C4820E"),
+                      labels=c("Female", "Male", "Other", "Not stated"))+
     ylab("Count") + 
     ggtitle("Age distribution") +
     theme(legend.title=element_blank())
@@ -497,3 +498,5 @@ plot_ri = function(ATET, n){
 }
 
 ```
+
+

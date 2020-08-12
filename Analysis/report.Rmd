@@ -189,10 +189,10 @@ We can see the distribution shifted to the positive in the treatment group, by a
 
 ## Effect calculation
 
-As discussed above, one primary method of effect calculation for us was looking at the differences between pre- and post-treatment-phase scores. In this spirit, we now compute the ATET throguh a regression of the difference on (1) only the treatment indicator `treat`:
+As discussed above, one primary method of effect calculation for us was looking at the differences between pre- and post-treatment-phase scores. In this spirit, we now compute the ATET through a regression of the difference on (1) only the treatment indicator `treat`:
 
 $$
-y_{scoredelta} = \beta_0 +\beta_1(treat)
+\Delta score = \beta_0 +\beta_1(treat)
 $$
 
 and (2) on the treatment indicator along with a number of covariates:
@@ -230,10 +230,10 @@ Results are again on the next page. Using this approach, the ATET is now the int
 
 ## P-value through randomization inference
 
-We conduct a randomization inference under the sharp null-hypothesis of absolutely no effect to get another angle on how statistically sound our results might be. Out split of 47/50 was sufficiently close to even that we will use p = 0.5 for our assignment probabilities.
+We conduct a randomization inference under the sharp null-hypothesis of absolutely no effect to get another angle on how statistically sound our results might be. Our split of 47/50 was sufficiently close to even that we will use p = 0.5 for our assignment probabilities.
 
 ```{r}
-plot_ri(0.766, 5000)
+plot_ri(0.766, 30000)
 ```
 
 
